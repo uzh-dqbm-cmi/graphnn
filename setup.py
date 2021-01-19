@@ -1,11 +1,11 @@
 from setuptools import setup
 
-setup(name='ddi',
+setup(name='deepadr',
       version='0.0.1',
       description='',
-      url='https://github.com/CMI-UZH/side-effects',
-      packages=['ddi'],
-      python_requires='>=3.6.0',
+      url='https://github.com/CMI-UZH/graphnn',
+      packages=['deepadr'],
+      python_requires='>=3.9.0',
       install_requires=[
             'numpy',
             'pandas',
@@ -13,6 +13,8 @@ setup(name='ddi',
             'scikit-learn',
             'torch',
             'matplotlib',
-            'seaborn'
+            'seaborn',
+            'PyTDC',
+            'pykeops'
       ],
       zip_safe=False)

@@ -3,7 +3,7 @@ import os
 import itertools
 from .utilities import get_device, create_directory, ReaderWriter, perfmetric_report, plot_loss, add_weight_decay_except_attn
 from .model import NDD_Code
-from .model_attn_siamese import DDI_SiameseTrf, DDI_Transformer, FeatureEmbAttention
+from .model_attn_siamese import DeepAdr_SiameseTrf, DeepAdr_Transformer, FeatureEmbAttention
 from .dataset import construct_load_dataloaders
 from .losses import ContrastiveLoss, CosEmbLoss
 import numpy as np
@@ -34,7 +34,7 @@ class NDDHyperparamConfig:
                                                                      self.num_epochs)
         return desc
 
-class DDITrfHyperparamConfig:
+class DeepAdrHyperparamConfig:
     def __init__(self, input_embed_dim, num_attn_heads, num_transformer_units, 
                 p_dropout, nonlin_func, mlp_embed_factor, pooling_mode, dist_opt,
                 l2_reg, batch_size, num_epochs):
@@ -95,16 +95,16 @@ def build_custom_config_map(similarity_type, model_name, loss_func='nllloss', ma
         hyperparam_config = NDDHyperparamConfig(400,300,0.5,0,200,20)
         input_dim = 1096
     elif(model_name == 'Transformer'):
-        hyperparam_config = DDITrfHyperparamConfig(64, 8, 12, 0.3, nn.ReLU(), 2, 'attn', 'euclidean', 0, 200, 20)
+        hyperparam_config = DeepAdrHyperparamConfig(64, 8, 12, 0.3, nn.ReLU(), 2, 'attn', 'euclidean', 0, 200, 20)
         input_dim = 548
     fold_num = -1 
     fdtype = torch.float32
     mconfig, options = generate_models_config(hyperparam_config, similarity_type, model_name, input_dim, fold_num, fdtype, loss_func=loss_func, margin=margin, loss_w=loss_w)
     return mconfig, options
 
-def build_dditrf_config_map(input_dim, similarity_type, model_name, hyperparam_opt, loss_func='nllloss', margin=0.5, loss_w=0.5):
+def build_deepadr_config_map(input_dim, similarity_type, model_name, hyperparam_opt, loss_func='nllloss', margin=0.5, loss_w=0.5):
     print("hyperparam_opt", hyperparam_opt, "len", len(hyperparam_opt))
-    hyperparam_config = DDITrfHyperparamConfig(*hyperparam_opt)
+    hyperparam_config = DeepAdrHyperparamConfig(*hyperparam_opt)
     fold_num = -1 
     fdtype = torch.float32
     mconfig, options = generate_models_config(hyperparam_config, similarity_type, model_name, input_dim, fold_num, fdtype, loss_func=loss_func, margin=margin, loss_w=loss_w)
@@ -144,18 +144,18 @@ def hyperparam_model_search(data_partitions, similarity_type, model_name,
         wrk_dir = create_directory(path)
 
         if options.get('loss_func') == 'bceloss':
-            run_ddi(data_partition, dsettypes, mconfig, options, wrk_dir,
-                    state_dict_dir=None, to_gpu=True, 
-                    gpu_index=fold_gpu_map[fold_num])
+            run_deepadr(data_partition, dsettypes, mconfig, options, wrk_dir,
+                        state_dict_dir=None, to_gpu=True,
+                        gpu_index=fold_gpu_map[fold_num])
         elif options.get('loss_func') == 'nllloss':
-             run_ddiTrf(data_partition, dsettypes, mconfig, options, wrk_dir,
-                    state_dict_dir=None, to_gpu=True, 
-                    gpu_index=fold_gpu_map[fold_num]) 
+             run_deepadrTrf(data_partition, dsettypes, mconfig, options, wrk_dir,
+                            state_dict_dir=None, to_gpu=True,
+                            gpu_index=fold_gpu_map[fold_num])
 
         print("-"*15)
 
-def run_ddi(data_partition, dsettypes, config, options, wrk_dir,
-            state_dict_dir=None, to_gpu=True, gpu_index=0):
+def run_deepadr(data_partition, dsettypes, config, options, wrk_dir,
+                state_dict_dir=None, to_gpu=True, gpu_index=0):
     pid = "{}".format(os.getpid())  # process id description
     # get data loader config
     dataloader_config = config['dataloader_config']
@@ -182,16 +182,16 @@ def run_ddi(data_partition, dsettypes, config, options, wrk_dir,
 
 
     if(model_name == 'NDD'):
-        # ddi model
-        ddi_model = NDD_Code(D_in=options['input_dim'],
+        # deepadr model
+        deepadr_model = NDD_Code(D_in=options['input_dim'],
                             H1=model_config.fc1_dim,
                             H2=model_config.fc2_dim,
                             D_out=1,
                             drop=model_config.p_dropout)
     
     # define optimizer and group parameters
-    models_param = list(ddi_model.parameters())
-    models = [(ddi_model, model_name)]
+    models_param = list(deepadr_model.parameters())
+    models = [(deepadr_model, model_name)]
 
     if(state_dict_dir):  # load state dictionary of saved models
         num_train_epochs = 20
@@ -258,7 +258,7 @@ def run_ddi(data_partition, dsettypes, config, options, wrk_dir,
 
                 with torch.set_grad_enabled(dsettype == 'train'):
                     num_samples_perbatch = X_batch.size(0)
-                    y_pred_logit = ddi_model(X_batch)
+                    y_pred_logit = deepadr_model(X_batch)
                     y_pred_prob  = sigmoid(y_pred_logit)
                     y_pred_clss = torch.zeros(y_pred_prob.shape, device=device, dtype=torch.int32)
                     y_pred_clss[y_pred_prob > 0.5] = 1
@@ -298,8 +298,8 @@ def run_ddi(data_partition, dsettypes, config, options, wrk_dir,
     # dump_scores
     dump_dict_content(score_dict, list(score_dict.keys()), 'score', wrk_dir)
 
-def run_ddiTrf(data_partition, dsettypes, config, options, wrk_dir,
-            state_dict_dir=None, to_gpu=True, gpu_index=0):
+def run_deepadrTrf(data_partition, dsettypes, config, options, wrk_dir,
+                   state_dict_dir=None, to_gpu=True, gpu_index=0):
     pid = "{}".format(os.getpid())  # process id description
     # get data loader config
     dataloader_config = config['dataloader_config']
@@ -330,19 +330,19 @@ def run_ddiTrf(data_partition, dsettypes, config, options, wrk_dir,
 
 
     if(model_name == 'Transformer'):
-        ddi_model = DDI_Transformer(input_size=options['input_dim'],
-                                    input_embed_dim=model_config.input_embed_dim, 
-                                    num_attn_heads=model_config.num_attn_heads, 
-                                    mlp_embed_factor=model_config.mlp_embed_factor,
-                                    nonlin_func=model_config.nonlin_func,
-                                    pdropout=model_config.p_dropout, 
-                                    num_transformer_units=model_config.num_transformer_units,
-                                    pooling_mode=model_config.pooling_mode)
-        ddi_siamese = DDI_SiameseTrf(options['input_dim'],model_config.dist_opt, num_classes=2)        
+        deepadr_model = DeepAdr_Transformer(input_size=options['input_dim'],
+                                        input_embed_dim=model_config.input_embed_dim,
+                                        num_attn_heads=model_config.num_attn_heads,
+                                        mlp_embed_factor=model_config.mlp_embed_factor,
+                                        nonlin_func=model_config.nonlin_func,
+                                        pdropout=model_config.p_dropout,
+                                        num_transformer_units=model_config.num_transformer_units,
+                                        pooling_mode=model_config.pooling_mode)
+        deepadr_siamese = DeepAdr_SiameseTrf(options['input_dim'], model_config.dist_opt, num_classes=2)
     
     # define optimizer and group parameters
-    models_param = list(ddi_model.parameters()) + list(ddi_siamese.parameters())
-    models = [(ddi_model, model_name), (ddi_siamese, f'{model_name}_Siamese')]
+    models_param = list(deepadr_model.parameters()) + list(deepadr_siamese.parameters())
+    models = [(deepadr_model, model_name), (deepadr_siamese, f'{model_name}_Siamese')]
 
     if(state_dict_dir):  # load state dictionary of saved models
         for m, m_name in models:
@@ -357,7 +357,7 @@ def run_ddiTrf(data_partition, dsettypes, config, options, wrk_dir,
         weight_decay = options.get('weight_decay', 1e-4)
         print('weight_decay', weight_decay)
         # split model params into attn parameters and other params
-        # models_param = add_weight_decay_except_attn([ddi_model, ddi_siamese], weight_decay)
+        # models_param = add_weight_decay_except_attn([deepadr_model, deepadr_siamese], weight_decay)
         # see paper Cyclical Learning rates for Training Neural Networks for parameters' choice
         # `https://arxive.org/pdf/1506.01186.pdf`
         # pytorch version >1.1, scheduler should be called after optimizer
@@ -420,8 +420,8 @@ def run_ddiTrf(data_partition, dsettypes, config, options, wrk_dir,
 
                 with torch.set_grad_enabled(dsettype == 'train'):
                     num_samples_perbatch = X_a.size(0)
-                    z_a, fattn_w_scores_a = ddi_model(X_a)
-                    z_b, fattn_w_scores_b = ddi_model(X_b)
+                    z_a, fattn_w_scores_a = deepadr_model(X_a)
+                    z_b, fattn_w_scores_b = deepadr_model(X_b)
 
                     if(dsettype in seqid_fattnw_map and model_config.pooling_mode == 'attn'):
                         for l, attn_scores in enumerate((fattn_w_scores_a, fattn_w_scores_b)):
@@ -429,7 +429,7 @@ def run_ddiTrf(data_partition, dsettypes, config, options, wrk_dir,
                             seqid_fattnw_map[dsettype][f'X_{suffix}'].update({sid.item():attn_scores[c].detach().cpu() for c, sid in enumerate(ids)})
 
                     
-                    logsoftmax_scores, dist = ddi_siamese(z_a, z_b)
+                    logsoftmax_scores, dist = deepadr_siamese(z_a, z_b)
 
                     __, y_pred_clss = torch.max(logsoftmax_scores, -1)
 
@@ -550,7 +550,7 @@ def get_hyperparam_options(prob_interval_truemax, prob_estim, model_name, random
     if(model_name == 'NDD'):
         hyperconfig_class = NDDHyperparamConfig
     elif(model_name == 'Transformer'):
-        hyperconfig_class = DDITrfHyperparamConfig
+        hyperconfig_class = DeepAdrHyperparamConfig
     return [hyperconfig_class(*hyperparam_space[indx]) for indx in indxs]
 
 
@@ -618,13 +618,13 @@ def train_val_run(datatensor_partitions, config_map, train_val_dir, fold_gpu_map
         wrk_dir = create_directory(path)
         print(wrk_dir)
         if options.get('loss_func') == 'bceloss':
-            run_ddi(data_partition, dsettypes, mconfig, options, wrk_dir,
-                    state_dict_dir=None, to_gpu=True, 
-                    gpu_index=fold_gpu_map[fold_num])
+            run_deepadr(data_partition, dsettypes, mconfig, options, wrk_dir,
+                        state_dict_dir=None, to_gpu=True,
+                        gpu_index=fold_gpu_map[fold_num])
         elif options.get('loss_func') == 'nllloss':
-             run_ddiTrf(data_partition, dsettypes, mconfig, options, wrk_dir,
-                    state_dict_dir=None, to_gpu=True, 
-                    gpu_index=fold_gpu_map[fold_num])  
+             run_deepadrTrf(data_partition, dsettypes, mconfig, options, wrk_dir,
+                            state_dict_dir=None, to_gpu=True,
+                            gpu_index=fold_gpu_map[fold_num])
 
 
 
@@ -644,13 +644,13 @@ def test_run(datatensor_partitions, config_map, train_val_dir, test_dir, fold_gp
             path = os.path.join(test_dir, 'test', 'fold_{}'.format(fold_num))
             test_wrk_dir = create_directory(path)
             if options.get('loss_func') == 'bceloss':
-                run_ddi(data_partition, dsettypes, mconfig, options, test_wrk_dir,
-                        state_dict_dir=state_dict_pth, to_gpu=True, 
-                        gpu_index=fold_gpu_map[fold_num])
+                run_deepadr(data_partition, dsettypes, mconfig, options, test_wrk_dir,
+                            state_dict_dir=state_dict_pth, to_gpu=True,
+                            gpu_index=fold_gpu_map[fold_num])
             elif options.get('loss_func') == 'nllloss':
-                run_ddiTrf(data_partition, dsettypes, mconfig, options, test_wrk_dir,
-                        state_dict_dir=state_dict_pth, to_gpu=True, 
-                        gpu_index=fold_gpu_map[fold_num])   
+                run_deepadrTrf(data_partition, dsettypes, mconfig, options, test_wrk_dir,
+                               state_dict_dir=state_dict_pth, to_gpu=True,
+                               gpu_index=fold_gpu_map[fold_num])
         else:
             print('WARNING: train dir not found: {}'.format(path))
 
@@ -664,7 +664,7 @@ def train_test_hyperparam_conf(hyperparam_comb, gpu_num, datatensor_partition, f
     text_to_save = str(hyperparam_comb) 
     print("hyperparam_comb:", text_to_save, "gpu num:", str(gpu_num))
     
-    mconfig, options = build_dditrf_config_map(num_drugs+1, exp_iden, 'Transformer', hyperparam_comb[:-1], margin=1., loss_w=hyperparam_comb[-1])
+    mconfig, options = build_deepadr_config_map(num_drugs + 1, exp_iden, 'Transformer', hyperparam_comb[:-1], margin=1., loss_w=hyperparam_comb[-1])
     config_map = (mconfig, options)
     time_stamp = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
     

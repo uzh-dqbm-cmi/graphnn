@@ -10,7 +10,7 @@ import pandas as pd
 from .utilities import ModelScore, ReaderWriter
 
 
-class DDIDataTensor(Dataset):
+class DeepAdrDataTensor(Dataset):
 
     def __init__(self, X_a, X_b, y):
         self.X_a = X_a # tensor.float32, (drug pairs, features)
@@ -44,8 +44,8 @@ class GIPDataTensor(Dataset):
 
 class PartitionDataTensor(Dataset):
 
-    def __init__(self, ddi_datatensor, gip_datatensor, partition_ids, dsettype, fold_num):
-        self.ddi_datatensor = ddi_datatensor  # instance of :class:`DDIDataTensor`
+    def __init__(self, deepadr_datatensor, gip_datatensor, partition_ids, dsettype, fold_num):
+        self.deepadr_datatensor = deepadr_datatensor  # instance of :class:`DeepAdrDataTensor`
         self.gip_datatensor = gip_datatensor # instance of :class:`GIPDataTensor`
         self.partition_ids = partition_ids  # list of indices for drug pairs
         self.dsettype = dsettype  # string, dataset type (i.e. train, validation, test)
@@ -54,7 +54,7 @@ class PartitionDataTensor(Dataset):
 
     def __getitem__(self, indx):
         target_id = self.partition_ids[indx]
-        X_a, X_b, y, ddi_indx = self.ddi_datatensor[target_id]
+        X_a, X_b, y, ddi_indx = self.deepadr_datatensor[target_id]
         X_a_gip, X_b_gip, gip_indx = self.gip_datatensor[target_id]
         # combine gip with other matrices
         X_a_comb = torch.cat([X_a, X_a_gip], axis=0)
@@ -183,7 +183,7 @@ def get_similarity_matrix(feat_fpath, dsetname):
     return X_fea
 
 def create_setvector_features(X, num_sim_types):
-    """reshape concatenated features from every similarity type matrix into set of vectors per ddi example"""
+    """reshape concatenated features from every similarity type matrix into set of vectors per deepadr example"""
     e = X[np.newaxis, :, :]
     f = np.transpose(e, axes=(0, 2, 1))
     splitter = num_sim_types 
@@ -195,7 +195,7 @@ def get_stratified_partitions(y, num_folds=5, valid_set_portion=0.1, random_stat
     """Generate 5-fold stratified sample of drug-pair ids based on the interaction label
 
     Args:
-        y: ddi labels
+        y: deepadr labels
     """
     skf_trte = StratifiedKFold(n_splits=num_folds, random_state=random_state, shuffle=True)  # split train and test
     
@@ -271,21 +271,21 @@ def report_label_distrib(labels):
         print("class:", label, "norm count:", norm_counts[i])
 
 
-def generate_partition_datatensor(ddi_datatensor, gip_dtensor_perfold, data_partitions):
+def generate_partition_datatensor(deepadr_datatensor, gip_dtensor_perfold, data_partitions):
     datatensor_partitions = {}
     for fold_num in data_partitions:
         datatensor_partitions[fold_num] = {}
         gip_datatensor = gip_dtensor_perfold[fold_num]
         for dsettype in data_partitions[fold_num]:
             target_ids = data_partitions[fold_num][dsettype]
-            datatensor_partition = PartitionDataTensor(ddi_datatensor, gip_datatensor, target_ids, dsettype, fold_num)
+            datatensor_partition = PartitionDataTensor(deepadr_datatensor, gip_datatensor, target_ids, dsettype, fold_num)
             datatensor_partitions[fold_num][dsettype] = datatensor_partition
     compute_class_weights_per_fold_(datatensor_partitions)
 
     return(datatensor_partitions)
 
-def build_datatensor_partitions(data_partitions, ddi_datatensor):
-    datatensor_partitions = generate_partition_datatensor(ddi_datatensor, data_partitions)
+def build_datatensor_partitions(data_partitions, deepadr_datatensor):
+    datatensor_partitions = generate_partition_datatensor(deepadr_datatensor, data_partitions)
     compute_class_weights_per_fold_(datatensor_partitions)
     return datatensor_partitions
 
@@ -323,14 +323,14 @@ def compute_class_weights_per_fold_(datatensor_partitions):
     for fold_num in datatensor_partitions:  # looping over the numbered folds
         dpartition = datatensor_partitions[fold_num]['train']
         partition_ids = dpartition.partition_ids
-        labels = dpartition.ddi_datatensor.y[partition_ids]
+        labels = dpartition.deepadr_datatensor.y[partition_ids]
         datatensor_partitions[fold_num]['class_weights'] = torch.from_numpy(compute_class_weights(labels)).float()
 
 def read_pickles(data_dir, device):
 
     # Read stored data structures
     data_partitions = ReaderWriter.read_data(os.path.join(data_dir, 'data_partitions.pkl'))
-    # instance of :class:`DDIDataTensor`
-    ddi_datatensor = ReaderWriter.read_tensor(os.path.join(data_dir, 'ddi_datatensor.torch'), device)
+    # instance of :class:`DeepAdrDataTensor`
+    deepadr_datatensor = ReaderWriter.read_tensor(os.path.join(data_dir, 'deepadr_datatensor.torch'), device)
 
-    return data_partitions, ddi_datatensor
+    return data_partitions, deepadr_datatensor

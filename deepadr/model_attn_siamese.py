@@ -18,7 +18,7 @@ class SH_SelfAttention(nn.Module):
     def forward(self, X):
         """
         Args:
-            X: tensor, (batch, ddi similarity type vector, input_size)
+            X: tensor, (batch, deepadr similarity type vector, input_size)
         """
         X_q = self.Wq(X) # queries
         X_k = self.Wk(X) # keys
@@ -56,7 +56,7 @@ class MH_SelfAttention(nn.Module):
     def forward(self, X):
         """
         Args:
-            X: tensor, (batch, ddi similarity type vector, input_size)
+            X: tensor, (batch, deepadr similarity type vector, input_size)
         """
         
         out = []
@@ -95,9 +95,9 @@ class TransformerUnit(nn.Module):
     def forward(self, X):
         """
         Args:
-            X: tensor, (batch, ddi similarity type vector, input_size)
+            X: tensor, (batch, deepadr similarity type vector, input_size)
         """
-        # z is tensor of size (batch, ddi similarity type vector, input_size)
+        # z is tensor of size (batch, deepadr similarity type vector, input_size)
         z = self.multihead_attn(X)
         # layer norm with residual connection
         z = self.layernorm_1(z + X)
@@ -124,7 +124,7 @@ class FeatureEmbAttention(nn.Module):
     def forward(self, X):
         '''Performs forward computation
         Args:
-            X: torch.Tensor, (batch, ddi similarity type vector, feat_dim), dtype=torch.float32
+            X: torch.Tensor, (batch, deepadr similarity type vector, feat_dim), dtype=torch.float32
         '''
 
         X_scaled = X / (self.input_dim ** (1/4))
@@ -156,7 +156,7 @@ def _init_model_params(named_parameters):
             if p_name.endswith('bias'):
                 nn.init.uniform_(p, a=-1.0, b=1.0)
 
-class DDI_Transformer(nn.Module):
+class DeepAdr_Transformer(nn.Module):
 
     def __init__(self, input_size=586, input_embed_dim=64, num_attn_heads=8, mlp_embed_factor=2, 
                 nonlin_func=nn.ReLU(), pdropout=0.3, num_transformer_units=12,
@@ -184,7 +184,7 @@ class DDI_Transformer(nn.Module):
     def forward(self, X):
         """
         Args:
-            X: tensor, (batch, ddi similarity type vector, input_size)
+            X: tensor, (batch, deepadr similarity type vector, input_size)
         """
 
         z = self.trfunit_pipeline(X)
@@ -204,7 +204,7 @@ class DDI_Transformer(nn.Module):
         
         return z, fattn_w_norm
 
-class DDI_SiameseTrf(nn.Module):
+class DeepAdr_SiameseTrf(nn.Module):
 
     def __init__(self, input_dim, dist, num_classes=2):
         

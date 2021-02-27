@@ -1,15 +1,370 @@
 import os
 import numpy as np
+
 import torch
-from torch.utils.data import Dataset, DataLoader
+# from torch.utils.data import Dataset, DataLoader
+import torch_geometric
+from torch_geometric.data import Data, Dataset, InMemoryDataset, Batch
+
 from sklearn.model_selection import StratifiedKFold, StratifiedShuffleSplit
 from sklearn.utils.class_weight import compute_class_weight
 from scipy.spatial.distance import pdist, squareform
 from scipy.linalg import norm as scpnorm
 import pandas as pd
 from .utilities import ModelScore, ReaderWriter
+from .chemfeatures import *
+
+class MoleculeDataset(InMemoryDataset):
+    def __init__(self,
+                 root=None,
+                 #data = None,
+                 #slices = None,
+                 transform=None,
+                 pre_transform=None,
+                 pre_filter=None,
+                 dataset='tdcDDI',
+                 smiles_list=None,
+                 empty=False):
+        """
+        Adapted from qm9.py. Disabled the download functionality
+        :param root: directory of the dataset, containing a raw and processed
+        dir. The raw dir should contain the file containing the smiles, and the
+        processed dir can either empty or a previously processed file
+        :param dataset: name of the dataset. Currently only implemented for
+        zinc250k, chembl_with_labels, tox21, hiv, bace, bbbp, clintox, esol,
+        freesolv, lipophilicity, muv, pcba, sider, toxcast
+        :param empty: if True, then will not load any data obj. For
+        initializing empty dataset
+        """
+        self.dataset = dataset
+        self.root = root
+
+        super(MoleculeDataset, self).__init__(root, transform, pre_transform,
+                                                 pre_filter)
+        self.transform, self.pre_transform, self.pre_filter = transform, pre_transform, pre_filter
+
+        if not empty:
+            self.data, self.slices = torch.load(self.processed_paths[0])
 
 
+    def get(self, idx):
+        data = Data()
+        for key in self.data.keys:
+            item, slices = self.data[key], self.slices[key]
+            s = list(repeat(slice(None), item.dim()))
+            s[data.cat_dim(key, item)] = slice(slices[idx],
+                                                    slices[idx + 1])
+            data[key] = item[s]
+        return data
+
+
+    @property
+    def raw_file_names(self):
+        file_name_list = os.listdir(self.raw_dir)
+        # assert len(file_name_list) == 1     # currently assume we have a
+        # # single raw file
+        return file_name_list
+
+    @property
+    def processed_file_names(self):
+        return 'geometric_data_processed.pt'
+
+    def download(self):
+        raise NotImplementedError('Must indicate valid location of raw data. '
+                                  'No download allowed')
+
+    def process(self):
+        data_smiles_list = []
+        data_list = []
+
+        if self.dataset == 'tdcDDI':
+            smiles_list, rdkit_mol_objs, labels = \
+                _load_tdcDDI_dataset()
+            for i in range(len(smiles_list)):
+                print(i)
+                rdkit_mol = rdkit_mol_objs[i]
+                # # convert aromatic bonds to double bonds
+                # Chem.SanitizeMol(rdkit_mol,
+                #                  sanitizeOps=Chem.SanitizeFlags.SANITIZE_KEKULIZE)
+                data = mol_to_graph_data_obj_simple(rdkit_mol)
+                # manually add mol id
+                data.id = torch.tensor(
+                    [i])  # id here is the index of the mol in
+                # the dataset
+                data.y = torch.tensor([labels[i]])
+                data_list.append(data)
+                data_smiles_list.append(smiles_list[i])
+
+#         elif self.dataset == 'tox21':
+#             smiles_list, rdkit_mol_objs, labels = \
+#                 _load_tox21_dataset(self.raw_paths[0])
+#             for i in range(len(smiles_list)):
+#                 print(i)
+#                 rdkit_mol = rdkit_mol_objs[i]
+#                 ## convert aromatic bonds to double bonds
+#                 #Chem.SanitizeMol(rdkit_mol,
+#                                  #sanitizeOps=Chem.SanitizeFlags.SANITIZE_KEKULIZE)
+#                 data = mol_to_graph_data_obj_simple(rdkit_mol)
+#                 # manually add mol id
+#                 data.id = torch.tensor(
+#                     [i])  # id here is the index of the mol in
+#                 # the dataset
+#                 data.y = torch.tensor(labels[i, :])
+#                 data_list.append(data)
+#                 data_smiles_list.append(smiles_list[i])
+
+#         elif self.dataset == 'hiv':
+#             smiles_list, rdkit_mol_objs, labels = \
+#                 _load_hiv_dataset(self.raw_paths[0])
+#             for i in range(len(smiles_list)):
+#                 print(i)
+#                 rdkit_mol = rdkit_mol_objs[i]
+#                 # # convert aromatic bonds to double bonds
+#                 # Chem.SanitizeMol(rdkit_mol,
+#                 #                  sanitizeOps=Chem.SanitizeFlags.SANITIZE_KEKULIZE)
+#                 data = mol_to_graph_data_obj_simple(rdkit_mol)
+#                 # manually add mol id
+#                 data.id = torch.tensor(
+#                     [i])  # id here is the index of the mol in
+#                 # the dataset
+#                 data.y = torch.tensor([labels[i]])
+#                 data_list.append(data)
+#                 data_smiles_list.append(smiles_list[i])
+            
+#         elif self.dataset == 'clintox':
+#             smiles_list, rdkit_mol_objs, labels = \
+#                 _load_clintox_dataset(self.raw_paths[0])
+#             for i in range(len(smiles_list)):
+#                 print(i)
+#                 rdkit_mol = rdkit_mol_objs[i]
+#                 if rdkit_mol != None:
+#                     # # convert aromatic bonds to double bonds
+#                     # Chem.SanitizeMol(rdkit_mol,
+#                     #                  sanitizeOps=Chem.SanitizeFlags.SANITIZE_KEKULIZE)
+#                     data = mol_to_graph_data_obj_simple(rdkit_mol)
+#                     # manually add mol id
+#                     data.id = torch.tensor(
+#                         [i])  # id here is the index of the mol in
+#                     # the dataset
+#                     data.y = torch.tensor(labels[i, :])
+#                     data_list.append(data)
+#                     data_smiles_list.append(smiles_list[i])
+
+
+#         elif self.dataset == 'sider':
+#             smiles_list, rdkit_mol_objs, labels = \
+#                 _load_sider_dataset(self.raw_paths[0])
+#             for i in range(len(smiles_list)):
+#                 print(i)
+#                 rdkit_mol = rdkit_mol_objs[i]
+#                 # # convert aromatic bonds to double bonds
+#                 # Chem.SanitizeMol(rdkit_mol,
+#                 #                  sanitizeOps=Chem.SanitizeFlags.SANITIZE_KEKULIZE)
+#                 data = mol_to_graph_data_obj_simple(rdkit_mol)
+#                 # manually add mol id
+#                 data.id = torch.tensor(
+#                     [i])  # id here is the index of the mol in
+#                 # the dataset
+#                 data.y = torch.tensor(labels[i, :])
+#                 data_list.append(data)
+#                 data_smiles_list.append(smiles_list[i])
+
+                    
+
+        else:
+            raise ValueError('Invalid dataset name')
+
+        if self.pre_filter is not None:
+            data_list = [data for data in data_list if self.pre_filter(data)]
+
+        if self.pre_transform is not None:
+            data_list = [self.pre_transform(data) for data in data_list]
+
+        # write data_smiles_list in processed paths
+        data_smiles_series = pd.Series(data_smiles_list)
+        data_smiles_series.to_csv(os.path.join(self.processed_dir,
+                                               'smiles.csv'), index=False,
+                                  header=False)
+
+        data, slices = self.collate(data_list)
+        torch.save((data, slices), self.processed_paths[0])
+
+        
+# def _load_tox21_dataset(input_path):
+#     """
+#     :param input_path:
+#     :return: list of smiles, list of rdkit mol obj, np.array containing the
+#     labels
+#     """
+#     input_df = pd.read_csv(input_path, sep=',')
+#     smiles_list = input_df['smiles']
+#     rdkit_mol_objs_list = [AllChem.MolFromSmiles(s) for s in smiles_list]
+#     tasks = ['NR-AR', 'NR-AR-LBD', 'NR-AhR', 'NR-Aromatase', 'NR-ER', 'NR-ER-LBD',
+#        'NR-PPAR-gamma', 'SR-ARE', 'SR-ATAD5', 'SR-HSE', 'SR-MMP', 'SR-p53']
+#     labels = input_df[tasks]
+#     # convert 0 to -1
+#     labels = labels.replace(0, -1)
+#     # convert nan to 0
+#     labels = labels.fillna(0)
+#     assert len(smiles_list) == len(rdkit_mol_objs_list)
+#     assert len(smiles_list) == len(labels)
+#     return smiles_list, rdkit_mol_objs_list, labels.values
+
+# def _load_hiv_dataset(input_path):
+#     """
+#     :param input_path:
+#     :return: list of smiles, list of rdkit mol obj, np.array containing the
+#     labels
+#     """
+#     input_df = pd.read_csv(input_path, sep=',')
+#     smiles_list = input_df['smiles']
+#     rdkit_mol_objs_list = [AllChem.MolFromSmiles(s) for s in smiles_list]
+#     labels = input_df['HIV_active']
+#     # convert 0 to -1
+#     labels = labels.replace(0, -1)
+#     # there are no nans
+#     assert len(smiles_list) == len(rdkit_mol_objs_list)
+#     assert len(smiles_list) == len(labels)
+#     return smiles_list, rdkit_mol_objs_list, labels.values
+
+def _load_tdcDDI_dataset(smiles_list, labels):
+    """
+    :param input_path:
+    :return: list of smiles, list of rdkit mol obj, np.array containing the
+    labels
+    """
+#     input_df = pd.read_csv(input_path, sep=',')
+    input_df = pd.DataFrame({'smiles':smiles_list, 'labels':labels})
+    smiles_list = input_df['smiles']
+    rdkit_mol_objs_list = [AllChem.MolFromSmiles(s) for s in smiles_list]
+    labels = input_df['labels']
+    # convert 0 to -1
+    labels = labels.replace(0, -1)
+    # there are no nans
+    assert len(smiles_list) == len(rdkit_mol_objs_list)
+    assert len(smiles_list) == len(labels)
+    return smiles_list, rdkit_mol_objs_list, labels.values
+
+
+# def _load_clintox_dataset(input_path):
+#     """
+#     :param input_path:
+#     :return: list of smiles, list of rdkit mol obj, np.array containing the
+#     labels
+#     """
+#     input_df = pd.read_csv(input_path, sep=',')
+#     smiles_list = input_df['smiles']
+#     rdkit_mol_objs_list = [AllChem.MolFromSmiles(s) for s in smiles_list]
+
+#     preprocessed_rdkit_mol_objs_list = [m if m != None else None for m in
+#                                         rdkit_mol_objs_list]
+#     preprocessed_smiles_list = [AllChem.MolToSmiles(m) if m != None else
+#                                 None for m in preprocessed_rdkit_mol_objs_list]
+#     tasks = ['FDA_APPROVED', 'CT_TOX']
+#     labels = input_df[tasks]
+#     # convert 0 to -1
+#     labels = labels.replace(0, -1)
+#     # there are no nans
+#     assert len(smiles_list) == len(preprocessed_rdkit_mol_objs_list)
+#     assert len(smiles_list) == len(preprocessed_smiles_list)
+#     assert len(smiles_list) == len(labels)
+#     return preprocessed_smiles_list, preprocessed_rdkit_mol_objs_list, \
+#            labels.values
+# # input_path = 'dataset/clintox/raw/clintox.csv'
+# # smiles_list, rdkit_mol_objs_list, labels = _load_clintox_dataset(input_path)
+
+
+# def _load_sider_dataset(input_path):
+#     """
+#     :param input_path:
+#     :return: list of smiles, list of rdkit mol obj, np.array containing the
+#     labels
+#     """
+#     input_df = pd.read_csv(input_path, sep=',')
+#     smiles_list = input_df['smiles']
+#     rdkit_mol_objs_list = [AllChem.MolFromSmiles(s) for s in smiles_list]
+#     tasks = ['Hepatobiliary disorders',
+#        'Metabolism and nutrition disorders', 'Product issues', 'Eye disorders',
+#        'Investigations', 'Musculoskeletal and connective tissue disorders',
+#        'Gastrointestinal disorders', 'Social circumstances',
+#        'Immune system disorders', 'Reproductive system and breast disorders',
+#        'Neoplasms benign, malignant and unspecified (incl cysts and polyps)',
+#        'General disorders and administration site conditions',
+#        'Endocrine disorders', 'Surgical and medical procedures',
+#        'Vascular disorders', 'Blood and lymphatic system disorders',
+#        'Skin and subcutaneous tissue disorders',
+#        'Congenital, familial and genetic disorders',
+#        'Infections and infestations',
+#        'Respiratory, thoracic and mediastinal disorders',
+#        'Psychiatric disorders', 'Renal and urinary disorders',
+#        'Pregnancy, puerperium and perinatal conditions',
+#        'Ear and labyrinth disorders', 'Cardiac disorders',
+#        'Nervous system disorders',
+#        'Injury, poisoning and procedural complications']
+#     labels = input_df[tasks]
+#     # convert 0 to -1
+#     labels = labels.replace(0, -1)
+#     assert len(smiles_list) == len(rdkit_mol_objs_list)
+#     assert len(smiles_list) == len(labels)
+#     return smiles_list, rdkit_mol_objs_list, labels.value
+        
+    
+    
+    
+# Source: https://pytorch-geometric.readthedocs.io/en/latest/notes/batching.html?highlight=pairdata#pairs-of-graphs
+# class PairData(torch_geometric.data.Data):
+#     def __init__(self, edge_index_s, x_s, edge_index_t, x_t):
+# #         print(type(self))
+#         super(PairData, self).__init__()
+#         self.edge_index_s = edge_index_s
+#         self.x_s = x_s
+#         self.edge_index_t = edge_index_t
+#         self.x_t = x_t
+        
+#     def __inc__(self, key, value):
+#         if key == 'edge_index_s':
+#             return self.x_s.size(0)
+#         if key == 'edge_index_t':
+#             return self.x_t.size(0)
+#         else:
+#             return super().__inc__(key, value)     
+        
+class PairData(torch_geometric.data.Data):
+    def __init__(self, data_a, data_b):
+#         print(type(self))
+        super(PairData, self).__init__()
+    
+        self.edge_index_a = data_a.edge_index
+        self.x_a = data_a.x
+        self.edge_attr_a = data_a.edge_attr
+    
+        self.edge_index_b = data_b.edge_index
+        self.x_b = data_b.x
+        self.edge_attr_b = data_b.edge_attr
+        
+    def __inc__(self, key, value):
+        if key == 'edge_index_a':
+            return self.x_a.size(0)
+        if key == 'edge_index_b':
+            return self.x_b.size(0)
+        else:
+            return super().__inc__(key, value)           
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
 class DeepAdrDataTensor(Dataset):
 
     def __init__(self, X_a, X_b, y):
@@ -105,6 +460,14 @@ def construct_load_dataloaders(dataset_fold, dsettypes, config, wrk_dir):
             flog_out[dsettype] = None
 
     return (data_loaders, epoch_loss_avgbatch, score_dict, class_weights, flog_out)
+
+def ddi_dataframe_to_unique_drugs(df):
+    # columns: ['Drug1_ID', 'Drug1', 'Drug2_ID', 'Drug2', 'Y']
+    drug1 = pd.Series(df.Drug1.values,index=df.Drug1_ID).to_dict()
+    drug2 = pd.Series(df.Drug2.values,index=df.Drug2_ID).to_dict()
+    uniqe_drugs = {**drug1, **drug2}
+    return pd.DataFrame(uniqe_drugs.items(), columns=['Drug_ID', 'Drug'])
+
 
 def preprocess_features(feat_fpath, dsetname, fill_diag = None):
     if dsetname in {'DS1', 'DS3'}:

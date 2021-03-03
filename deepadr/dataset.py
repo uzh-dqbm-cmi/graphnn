@@ -1,5 +1,6 @@
 import os
 import numpy as np
+import pandas as pd
 
 import torch
 # from torch.utils.data import Dataset, DataLoader
@@ -351,9 +352,14 @@ class PairData(torch_geometric.data.Data):
             return super().__inc__(key, value)           
         
         
-        
-        
-        
+def pair_ids_to_pairdata(uniq_mol, pair):
+#     print(a,b)
+    data_a = uniq_mol.iloc[pair[0]].Data
+    data_b = uniq_mol.iloc[pair[1]].Data
+    return PairData(data_a, data_b)                
+
+def get_X_all_pairdata(uniq_mol, pairs):
+    return {key:pair_ids_to_pairdata(uniq_mol, pair) for key, pair in pairs.items()}        
         
         
         
@@ -494,6 +500,16 @@ def preprocess_labels(interaction_fpath, dsetname):
 def get_y_from_interactionmat(interaction_mat):
     r, c = np.triu_indices(len(interaction_mat),1) # take indices off the diagnoal by 1
     return interaction_mat[r,c]
+
+def generate_labels_df(uniq_mol, data):
+    y = pd.DataFrame(0, columns=uniq_mol.Drug_ID, index=uniq_mol.Drug_ID)
+
+    for index, row in data.iterrows():
+        if (row.Drug1_ID in y.index and row.Drug2_ID in y.index):
+            y.loc[row.Drug1_ID][row.Drug2_ID] = row.Y
+            y.loc[row.Drug2_ID][row.Drug1_ID] = row.Y
+            
+    return y
 
 def compute_gip_profile(adj, bw=1.):
     """approach based on Olayan et al. https://doi.org/10.1093/bioinformatics/btx731 """

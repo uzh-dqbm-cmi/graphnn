@@ -2,3 +2,4 @@ data/processed/**
 *.p
 *.pickle
 *.pkl
+*.pt

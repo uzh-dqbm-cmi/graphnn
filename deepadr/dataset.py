@@ -12,7 +12,7 @@ from sklearn.utils.class_weight import compute_class_weight
 from scipy.spatial.distance import pdist, squareform
 from scipy.linalg import norm as scpnorm
 import pandas as pd
-from .utilities import ModelScore, ReaderWriter
+from .utilities import ModelScore, ReaderWriter, create_directory
 from .chemfeatures import *
 
 class MoleculeDataset(InMemoryDataset):
@@ -39,11 +39,14 @@ class MoleculeDataset(InMemoryDataset):
         """
         self.dataset = dataset
         self.root = root
+        
+#         create_directory("raw", root)
+#         create_directory("processed", root)
 
         super(MoleculeDataset, self).__init__(root, transform, pre_transform,
                                                  pre_filter)
         self.transform, self.pre_transform, self.pre_filter = transform, pre_transform, pre_filter
-
+        
         if not empty:
             self.data, self.slices = torch.load(self.processed_paths[0])
 
@@ -73,29 +76,87 @@ class MoleculeDataset(InMemoryDataset):
     def download(self):
         raise NotImplementedError('Must indicate valid location of raw data. '
                                   'No download allowed')
+        
+#     def pairCollate(self, data_list):
+#         r"""Collates a python list of data objects to the internal storage
+#         format of :class:`torch_geometric.data.InMemoryDataset`."""
+#         keys = data_list[0].keys
+#         print("keys", keys)
+#         data = data_list[0].__class__()
+
+#         for key in keys:
+#             data[key] = []
+#         slices = {key: [0] for key in keys}
+
+#         for item, key in product(data_list, keys):
+#             data[key].append(item[key])
+#             if isinstance(item[key], Tensor) and item[key].dim() > 0:
+#                 cat_dim = item.__cat_dim__(key, item[key])
+#                 cat_dim = 0 if cat_dim is None else cat_dim
+#                 s = slices[key][-1] + item[key].size(cat_dim)
+#             else:
+#                 s = slices[key][-1] + 1
+#             slices[key].append(s)
+
+#         if hasattr(data_list[0], '__num_nodes__'):
+#             data.__num_nodes__ = []
+#             for item in data_list:
+#                 data.__num_nodes__.append(item.num_nodes)
+
+#         for key in keys:
+#             item = data_list[0][key]
+#             if isinstance(item, Tensor) and len(data_list) > 1:
+#                 if item.dim() > 0:
+#                     cat_dim = data.__cat_dim__(key, item)
+#                     cat_dim = 0 if cat_dim is None else cat_dim
+#                     data[key] = torch.cat(data[key], dim=cat_dim)
+#                 else:
+#                     data[key] = torch.stack(data[key])
+#             elif isinstance(item, Tensor):  # Don't duplicate attributes...
+#                 data[key] = data[key][0]
+#             elif isinstance(item, int) or isinstance(item, float):
+#                 data[key] = torch.tensor(data[key])
+
+#             slices[key] = torch.tensor(slices[key], dtype=torch.long)
+
+#         return data, slices
 
     def process(self):
         data_smiles_list = []
         data_list = []
 
         if self.dataset == 'tdcDDI':
-            smiles_list, rdkit_mol_objs, labels = \
-                _load_tdcDDI_dataset()
-            for i in range(len(smiles_list)):
-                print(i)
-                rdkit_mol = rdkit_mol_objs[i]
-                # # convert aromatic bonds to double bonds
-                # Chem.SanitizeMol(rdkit_mol,
-                #                  sanitizeOps=Chem.SanitizeFlags.SANITIZE_KEKULIZE)
-                data = mol_to_graph_data_obj_simple(rdkit_mol)
-                # manually add mol id
+            X = ReaderWriter.read_data(os.path.join(self.raw_dir, 'X.pkl'))
+            y = ReaderWriter.read_data(os.path.join(self.raw_dir, 'y.pkl'))
+    
+            for i,data in X.items():
                 data.id = torch.tensor(
                     [i])  # id here is the index of the mol in
                 # the dataset
-                data.y = torch.tensor([labels[i]])
-                data_list.append(data)
-                data_smiles_list.append(smiles_list[i])
+                data.y = torch.tensor([y[i]])
+                data_list.append(data)                 
 
+        else:
+            raise ValueError('Invalid dataset name')
+
+        if self.pre_filter is not None:
+            data_list = [data for data in data_list if self.pre_filter(data)]
+
+        if self.pre_transform is not None:
+            data_list = [self.pre_transform(data) for data in data_list]
+
+        # write data_smiles_list in processed paths
+#         data_smiles_series = pd.Series(data_smiles_list)
+#         data_smiles_series.to_csv(os.path.join(self.processed_dir,
+#                                                'smiles.csv'), index=False,
+#                                   header=False)
+
+        data, slices = self.collate(data_list)
+        torch.save((data, slices), self.processed_paths[0])
+        
+        print("exit process(self)")
+
+        
 #         elif self.dataset == 'tox21':
 #             smiles_list, rdkit_mol_objs, labels = \
 #                 _load_tox21_dataset(self.raw_paths[0])
@@ -169,27 +230,6 @@ class MoleculeDataset(InMemoryDataset):
 #                 data.y = torch.tensor(labels[i, :])
 #                 data_list.append(data)
 #                 data_smiles_list.append(smiles_list[i])
-
-                    
-
-        else:
-            raise ValueError('Invalid dataset name')
-
-        if self.pre_filter is not None:
-            data_list = [data for data in data_list if self.pre_filter(data)]
-
-        if self.pre_transform is not None:
-            data_list = [self.pre_transform(data) for data in data_list]
-
-        # write data_smiles_list in processed paths
-        data_smiles_series = pd.Series(data_smiles_list)
-        data_smiles_series.to_csv(os.path.join(self.processed_dir,
-                                               'smiles.csv'), index=False,
-                                  header=False)
-
-        data, slices = self.collate(data_list)
-        torch.save((data, slices), self.processed_paths[0])
-
         
 # def _load_tox21_dataset(input_path):
 #     """
@@ -331,17 +371,18 @@ def _load_tdcDDI_dataset(smiles_list, labels):
 #             return super().__inc__(key, value)     
         
 class PairData(torch_geometric.data.Data):
-    def __init__(self, data_a, data_b):
+    def __init__(self, data_a=None, data_b=None):
 #         print(type(self))
         super(PairData, self).__init__()
     
-        self.edge_index_a = data_a.edge_index
-        self.x_a = data_a.x
-        self.edge_attr_a = data_a.edge_attr
-    
-        self.edge_index_b = data_b.edge_index
-        self.x_b = data_b.x
-        self.edge_attr_b = data_b.edge_attr
+        if ((data_a is not None) and (data_b is not None)): 
+            self.edge_index_a = data_a.edge_index
+            self.x_a = data_a.x
+            self.edge_attr_a = data_a.edge_attr
+
+            self.edge_index_b = data_b.edge_index
+            self.x_b = data_b.x
+            self.edge_attr_b = data_b.edge_attr
         
     def __inc__(self, key, value):
         if key == 'edge_index_a':

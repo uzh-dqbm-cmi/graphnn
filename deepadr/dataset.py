@@ -51,15 +51,15 @@ class MoleculeDataset(InMemoryDataset):
             self.data, self.slices = torch.load(self.processed_paths[0])
 
 
-    def get(self, idx):
-        data = Data()
-        for key in self.data.keys:
-            item, slices = self.data[key], self.slices[key]
-            s = list(repeat(slice(None), item.dim()))
-            s[data.cat_dim(key, item)] = slice(slices[idx],
-                                                    slices[idx + 1])
-            data[key] = item[s]
-        return data
+#     def get(self, idx):
+#         data = Data()
+#         for key in self.data.keys:
+#             item, slices = self.data[key], self.slices[key]
+#             s = list(repeat(slice(None), item.dim()))
+#             s[data.cat_dim(key, item)] = slice(slices[idx],
+#                                                     slices[idx + 1])
+#             data[key] = item[s]
+#         return data
 
 
     @property
@@ -154,7 +154,7 @@ class MoleculeDataset(InMemoryDataset):
         data, slices = self.collate(data_list)
         torch.save((data, slices), self.processed_paths[0])
         
-        print("exit process(self)")
+#         print("exit process(self)")
 
         
 #         elif self.dataset == 'tox21':
@@ -390,7 +390,26 @@ class PairData(torch_geometric.data.Data):
         if key == 'edge_index_b':
             return self.x_b.size(0)
         else:
-            return super().__inc__(key, value)           
+            return super().__inc__(key, value)
+        
+    @property
+    def num_node_features(self):
+        r"""Returns the number of features per node in the graph."""
+        if self.x_a is None:
+            return 0
+        return 1 if self.x_a.dim() == 1 else self.x_a.size(1)
+
+    @property
+    def num_features(self):
+        r"""Alias for :py:attr:`~num_node_features`."""
+        return self.num_node_features
+
+    @property
+    def num_edge_features(self):
+        r"""Returns the number of features per edge in the graph."""
+        if self.edge_attr_a is None:
+            return 0
+        return 1 if self.edge_attr_a.dim() == 1 else self.edge_attr_a.size(1)
         
         
 def pair_ids_to_pairdata(uniq_mol, pair):

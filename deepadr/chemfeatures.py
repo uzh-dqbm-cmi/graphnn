@@ -60,6 +60,30 @@ allowable_features = {
     ]
 }
 
+# Source: https://github.com/snap-stanford/ogb/blob/master/ogb/utils/features.py
+def get_atom_feature_dims():
+    return list(map(len, [
+        allowable_features['possible_atomic_num_list'],
+        allowable_features['possible_formal_charge_list'],
+        allowable_features['possible_chirality_list'],
+        allowable_features['possible_hybridization_list'],
+        allowable_features['possible_numH_list'],
+        allowable_features['possible_implicit_valence_list'],
+        allowable_features['possible_degree_list'],
+#         allowable_features['possible_number_radical_e_list'],
+#         allowable_features['possible_is_aromatic_list'],
+#         allowable_features['possible_is_in_ring_list']
+        ]))
+
+def get_bond_feature_dims():
+    return list(map(len, [
+        allowable_features['possible_bonds'],
+        allowable_features['possible_bond_dirs'],
+#         allowable_features['possible_bond_type_list'],
+#         allowable_features['possible_bond_stereo_list'],
+#         allowable_features['possible_is_conjugated_list']
+        ]))
+
 def smiles_to_mol(smiles):
     return AllChem.MolFromSmiles(smiles)
 

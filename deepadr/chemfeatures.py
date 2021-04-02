@@ -25,6 +25,8 @@ from rdkit.Chem.Fingerprints import FingerprintMols
 from rdkit.Chem.rdReducedGraphs import GetErGFingerprint
 from rdkit.Chem.EnumerateStereoisomers import EnumerateStereoisomers, StereoEnumerationOptions
 
+from ogb.utils import smiles2graph
+
 
 # from https://github.com/snap-stanford/pretrain-gnns/blob/master/chem/loader.py
 
@@ -136,6 +138,19 @@ def mol_to_graph_data_obj_simple(mol):
 
     return data
 
+
+def smiles_to_graph_data_obj_ogb(smiles):
+    data = Data()
+    graph = smiles2graph(smiles)
+
+    assert(len(graph['edge_feat']) == graph['edge_index'].shape[1])
+    assert(len(graph['node_feat']) == graph['num_nodes'])
+
+    data.__num_nodes__ = int(graph['num_nodes'])
+    data.edge_index = torch.from_numpy(graph['edge_index']).to(torch.int64)
+    data.edge_attr = torch.from_numpy(graph['edge_feat']).to(torch.int64)
+    data.x = torch.from_numpy(graph['node_feat']).to(torch.int64)
+    return data
 
 # # https://github.com/kexinhuang12345/DeepPurpose/blob/master/DeepPurpose/utils.py
 # MAX_ATOM = 400

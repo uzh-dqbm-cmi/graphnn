@@ -7,7 +7,7 @@ import pandas as pd
 from sklearn.metrics import classification_report, f1_score, roc_curve, precision_recall_curve, accuracy_score, \
                             recall_score, precision_score, roc_auc_score, auc, average_precision_score
 from matplotlib import pyplot as plt
-from os.path import dirname, abspath
+from os.path import dirname, abspath, isfile
 
 
 class ModelScore:
@@ -81,6 +81,16 @@ class ReaderWriter(object):
         pass
 
     @staticmethod
+    def read_or_dump_data(file_name, data_gen_fun, data_gen_params):
+        if (isfile(file_name)):
+            return ReaderWriter.read_data(file_name)
+        else:
+            data = data_gen_fun(*data_gen_params)
+            ReaderWriter.dump_data(data, file_name)
+            return data
+
+    
+    @staticmethod
     def dump_data(data, file_name, mode="wb"):
         """dump data by pickling
            Args:
@@ -147,6 +157,10 @@ class ReaderWriter(object):
                 yield line
 
 
+# resolves relative paths, e.g. /path/to/../parent/dir/
+def norm_join_paths(*paths):
+    return os.path.normpath(os.path.join(*paths))
+                
 def create_directory(folder_name, directory="current"):
     """create directory/folder (if it does not exist) and returns the path of the directory
        Args:
@@ -163,7 +177,7 @@ def create_directory(folder_name, directory="current"):
         path_current_dir = directory
     print("path_current_dir", path_current_dir)
         
-    path_new_dir = os.path.join(path_current_dir, folder_name)
+    path_new_dir = os.path.normpath(os.path.join(path_current_dir, folder_name))
     if not os.path.exists(path_new_dir):
         os.makedirs(path_new_dir)
     return(path_new_dir)

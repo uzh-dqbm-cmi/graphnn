@@ -412,14 +412,14 @@ class PairData(torch_geometric.data.Data):
         return 1 if self.edge_attr_a.dim() == 1 else self.edge_attr_a.size(1)
         
         
-def pair_ids_to_pairdata(uniq_mol, pair):
+def pair_ids_to_pairdata(uniq_mol, pair, datafield):
 #     print(a,b)
-    data_a = uniq_mol.iloc[pair[0]].Data
-    data_b = uniq_mol.iloc[pair[1]].Data
+    data_a = uniq_mol.iloc[pair[0]][datafield]
+    data_b = uniq_mol.iloc[pair[1]][datafield]
     return PairData(data_a, data_b)                
 
-def get_X_all_pairdata(uniq_mol, pairs):
-    return {key:pair_ids_to_pairdata(uniq_mol, pair) for key, pair in pairs.items()}        
+def get_X_all_pairdata(uniq_mol, pairs, datafield):
+    return {key:pair_ids_to_pairdata(uniq_mol, pair, datafield) for key, pair in pairs.items()}        
         
         
         

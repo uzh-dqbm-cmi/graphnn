@@ -1,6 +1,7 @@
 # source: https://github.com/snap-stanford/ogb/blob/153e37636009cac0aeb388073ab6df9f3b2792bf/examples/graphproppred/mol/conv.py
 
 import torch
+from torch_geometric.nn.conv import *
 from torch_geometric.nn import MessagePassing
 import torch.nn.functional as F
 from torch_geometric.nn import global_mean_pool, global_add_pool
@@ -10,13 +11,13 @@ from torch_geometric.utils import degree
 import math
 
 ### GIN convolution along the graph structure
-class GINConv(MessagePassing):
+class GINConvWEdge(MessagePassing):
     def __init__(self, emb_dim):
         '''
             emb_dim (int): node embedding dimensionality
         '''
 
-        super(GINConv, self).__init__(aggr = "add")
+        super(GINConvWEdge, self).__init__(aggr = "add")
 
         self.mlp = torch.nn.Sequential(torch.nn.Linear(emb_dim, 2*emb_dim), torch.nn.BatchNorm1d(2*emb_dim), torch.nn.ReLU(), torch.nn.Linear(2*emb_dim, emb_dim))
         self.eps = torch.nn.Parameter(torch.Tensor([0]))
@@ -36,9 +37,9 @@ class GINConv(MessagePassing):
         return aggr_out
 
 ### GCN convolution along the graph structure
-class GCNConv(MessagePassing):
+class GCNConvWEdge(MessagePassing):
     def __init__(self, emb_dim):
-        super(GCNConv, self).__init__(aggr='add')
+        super(GCNConvWEdge, self).__init__(aggr='add')
 
         self.linear = torch.nn.Linear(emb_dim, emb_dim)
         self.root_emb = torch.nn.Embedding(1, emb_dim)
@@ -72,7 +73,7 @@ class GNN_node(torch.nn.Module):
     Output:
         node representations
     """
-    def __init__(self, num_layer, emb_dim, drop_ratio = 0.5, JK = "last", residual = False, gnn_type = 'gin'):
+    def __init__(self, num_layer, emb_dim, drop_ratio = 0.5, JK = "last", residual = False, gnn_type = 'gcn', with_edge_attr=False, return_multilayer=False):
         '''
             emb_dim (int): node embedding dimensionality
             num_layer (int): number of GNN message passing layers
@@ -85,6 +86,7 @@ class GNN_node(torch.nn.Module):
         self.JK = JK
         ### add residual connection or not
         self.residual = residual
+        self.return_multilayer = return_multilayer
 
         if self.num_layer < 2:
             raise ValueError("Number of GNN layers must be greater than 1.")
@@ -96,12 +98,20 @@ class GNN_node(torch.nn.Module):
         self.batch_norms = torch.nn.ModuleList()
 
         for layer in range(num_layer):
-            if gnn_type == 'gin':
-                self.convs.append(GINConv(emb_dim))
-            elif gnn_type == 'gcn':
-                self.convs.append(GCNConv(emb_dim))
+            if with_edge_attr:
+                if gnn_type == 'gin':
+                    self.convs.append(GINConvWEdge(emb_dim))
+                elif gnn_type == 'gcn':
+                    self.convs.append(GCNConvWEdge(emb_dim))
+                else:
+                    raise ValueError('Undefined GNN type called {}'.format(gnn_type))
             else:
-                raise ValueError('Undefined GNN type called {}'.format(gnn_type))
+                if gnn_type == 'gin':
+                    self.convs.append(GINConv(emb_dim, emb_dim))
+                elif gnn_type == 'gcn':
+                    self.convs.append(GCNConv(emb_dim, emb_dim))
+                else:
+                    raise ValueError('Undefined GNN type called {}'.format(gnn_type))
 
             self.batch_norms.append(torch.nn.BatchNorm1d(emb_dim))
 
@@ -113,10 +123,14 @@ class GNN_node(torch.nn.Module):
         h_list = [self.atom_encoder(x)]
         for layer in range(self.num_layer):
 
-            h = self.convs[layer](h_list[layer], edge_index, edge_attr)
+            if edge_attr == None:
+                h = self.convs[layer](h_list[layer], edge_index)
+            else:
+                h = self.convs[layer](h_list[layer], edge_index, edge_attr)
+                
             h = self.batch_norms[layer](h)
 
-            if layer == self.num_layer - 1:
+            if ((layer == self.num_layer - 1) and (not self.return_multilayer)):
                 #remove relu for the last layer
                 h = F.dropout(h, self.drop_ratio, training = self.training)
             else:
@@ -135,7 +149,10 @@ class GNN_node(torch.nn.Module):
             for layer in range(self.num_layer):
                 node_representation += h_list[layer]
 
-        return node_representation
+        if self.return_multilayer:
+            return h_list
+        else:
+            return node_representation
 
 
 ### Virtual GNN to generate node embedding

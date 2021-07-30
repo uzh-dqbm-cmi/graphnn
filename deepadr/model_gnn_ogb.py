@@ -1,5 +1,6 @@
 # source: https://github.com/snap-stanford/ogb/blob/153e37636009cac0aeb388073ab6df9f3b2792bf/examples/graphproppred/mol/gnn.py
 
+# import numpy as np
 import torch
 from torch import nn
 from torch_geometric.nn import MessagePassing
@@ -8,13 +9,14 @@ import torch.nn.functional as F
 from torch_geometric.nn.inits import uniform
 
 from .conv import GNN_node, GNN_node_Virtualnode
+from .dataset import create_setvector_features
 
 from torch_scatter import scatter_mean
 
 class GNN(torch.nn.Module):
 
     def __init__(self, num_tasks, num_layer = 5, emb_dim = 300, 
-                    gnn_type = 'gin', virtual_node = True, residual = False, drop_ratio = 0.5, JK = "last", graph_pooling = "mean"):
+                    gnn_type = 'gin', virtual_node = True, residual = False, drop_ratio = 0.5, JK = "last", graph_pooling = "mean", with_edge_attr=False, return_multilayer=False):
         '''
             num_tasks (int): number of labels to be predicted
             virtual_node (bool): whether to add virtual node or not
@@ -28,6 +30,8 @@ class GNN(torch.nn.Module):
         self.emb_dim = emb_dim
         self.num_tasks = num_tasks
         self.graph_pooling = graph_pooling
+        self.with_edge_attr = with_edge_attr
+        self.return_multilayer = return_multilayer
 
         if self.num_layer < 2:
             raise ValueError("Number of GNN layers must be greater than 1.")
@@ -36,7 +40,7 @@ class GNN(torch.nn.Module):
         if virtual_node:
             self.gnn_node = GNN_node_Virtualnode(num_layer, emb_dim, JK = JK, drop_ratio = drop_ratio, residual = residual, gnn_type = gnn_type)
         else:
-            self.gnn_node = GNN_node(num_layer, emb_dim, JK = JK, drop_ratio = drop_ratio, residual = residual, gnn_type = gnn_type)
+            self.gnn_node = GNN_node(num_layer, emb_dim, JK = JK, drop_ratio = drop_ratio, residual = residual, gnn_type = gnn_type, with_edge_attr=self.with_edge_attr, return_multilayer=self.return_multilayer)
 
 
         ### Pooling function to generate whole-graph embeddings
@@ -61,9 +65,25 @@ class GNN(torch.nn.Module):
     def forward(self, x, edge_index, edge_attr, batch):
                 #x, edge_index, edge_attr, batch = batched_data.x, batched_data.edge_index, batched_data.edge_attr, batched_data.batch
 
-        h_node = self.gnn_node(x, edge_index, edge_attr)
+        if self.with_edge_attr:
+            h_node = self.gnn_node(x, edge_index, edge_attr)
+        else:
+            h_node = self.gnn_node(x, edge_index, None)
+            
+#         print("h_node_1 shape:", h_node[1].shape)
 
-        h_graph = self.pool(h_node, batch)
+        if self.return_multilayer:
+            h_graphs = [self.pool(h, batch) for h in h_node]
+#             print("h_graph_1 shape:", h_graphs[1].shape)
+            
+            h_graph_cat = torch.cat(h_graphs, dim=1)
+#             print("h_graph_cat shape:", h_graph_cat.shape)
+            
+            h_graph = h_graph_cat.reshape(h_graph_cat.shape[0], len(h_graphs), h_graph_cat.shape[1] // len(h_graphs))
+#             print("h_graph shape:", h_graph.shape)
+
+        else:
+            h_graph = self.pool(h_node, batch)
 
 #         return self.graph_pred_linear(h_graph)
         return h_graph
@@ -79,9 +99,11 @@ def _init_model_params(named_parameters):
 
 class DeepAdr_SiameseTrf(nn.Module):
 
-    def __init__(self, input_dim, dist, num_classes=2):
+    def __init__(self, input_dim, dist, expression_dim, num_classes=2, do_softmax=True):
         
         super().__init__()
+        
+        self.do_softmax = do_softmax
         
         if dist == 'euclidean':
             self.dist = nn.PairwiseDistance(p=2, keepdim=True)
@@ -93,7 +115,7 @@ class DeepAdr_SiameseTrf(nn.Module):
             self.dist = nn.CosineSimilarity(dim=1)
             self.alpha = 1
 
-        self.Wy = nn.Linear(2*input_dim+1, num_classes)
+        self.Wy = nn.Linear(2*input_dim+1+expression_dim, num_classes)
         # perform log softmax on the feature dimension
         self.log_softmax = nn.LogSoftmax(dim=-1)
 
@@ -104,7 +126,7 @@ class DeepAdr_SiameseTrf(nn.Module):
     def _init_params_(self):
         _init_model_params(self.named_parameters())
     
-    def forward(self, Z_a, Z_b):
+    def forward(self, Z_a, Z_b, Z_e):
         """
         Args:
             Z_a: tensor, (batch, embedding dim)
@@ -115,9 +137,37 @@ class DeepAdr_SiameseTrf(nn.Module):
         # update dist to distance measure if cosine is chosen
         dist = self.alpha * (1-dist) + (1-self.alpha) * dist
         
-        out = torch.cat([Z_a, Z_b, dist], axis=-1)
+        out = torch.cat([Z_a, Z_b, dist, Z_e], axis=-1)
         y = self.Wy(out)
-        return self.log_softmax(y), dist
+        
+        if self.do_softmax:
+            return self.log_softmax(y), dist
+        else:
+            return y, dist
 
+class ExpressionNN(nn.Module):
+    def __init__(self, D_in=8785, H1=400, H2=300, D_out=100, drop=0.5):
+        super(ExpressionNN, self).__init__()
+        # an affine operation: y = Wx + b
+        self.fc1 = nn.Linear(D_in, H1) # Fully Connected
+        self.fc2 = nn.Linear(H1, H2)
+        self.fc3 = nn.Linear(H2, D_out)
+        self.drop = nn.Dropout(drop)
+        self._init_weights()
+
+    def forward(self, x):
+        x = F.relu(self.fc1(x))
+        x = self.drop(x)
+        x = F.relu(self.fc2(x))
+        x = self.drop(x)
+        x = self.fc3(x)
+        return x
+    
+    def _init_weights(self):
+        for m in self.modules():
+            if(isinstance(m, nn.Linear)):
+                nn.init.xavier_normal_(m.weight.data)
+                m.bias.data.uniform_(-1,0)
+        
 # if __name__ == '__main__':
 #     GNN(num_tasks = 10)

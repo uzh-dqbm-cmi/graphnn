@@ -134,6 +134,19 @@ class MoleculeDataset(InMemoryDataset):
                     [i])  # id here is the index of the mol in
                 # the dataset
                 data.y = torch.tensor([y[i]])
+                data_list.append(data)
+                
+        elif self.dataset == 'tdcSynergy':
+            X = ReaderWriter.read_data(os.path.join(self.raw_dir, 'X.pkl'))
+            y = ReaderWriter.read_data(os.path.join(self.raw_dir, 'y.pkl'))
+            expression = ReaderWriter.read_data(os.path.join(self.raw_dir, 'expression.pkl'))
+    
+            for i,data in X.items():
+                data.id = torch.tensor(
+                    [i])  # id here is the index of the mol in
+                # the dataset
+                data.y = torch.tensor([y[i]])
+                data.expression = torch.tensor([expression[i]])
                 data_list.append(data)                 
 
         else:
@@ -421,7 +434,14 @@ def pair_ids_to_pairdata(uniq_mol, pair, datafield):
 def get_X_all_pairdata(uniq_mol, pairs, datafield):
     return {key:pair_ids_to_pairdata(uniq_mol, pair, datafield) for key, pair in pairs.items()}        
         
-        
+def pair_ids_to_pairdata_synergy(uniq_mol, pair, datafield):
+#     print(a,b)
+    data_a = uniq_mol.loc[pair[0]][datafield]
+    data_b = uniq_mol.loc[pair[1]][datafield]
+    return PairData(data_a, data_b)                
+
+def get_X_all_pairdata_synergy(uniq_mol, pairs, datafield):
+    return {key:pair_ids_to_pairdata_synergy(uniq_mol, pair, datafield) for key, pair in pairs.items()}                        
         
         
         

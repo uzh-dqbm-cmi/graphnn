@@ -396,14 +396,24 @@ class PairData(torch_geometric.data.Data):
             self.edge_index_b = data_b.edge_index
             self.x_b = data_b.x
             self.edge_attr_b = data_b.edge_attr
+
+# Old PyG            
+#     def __inc__(self, key, value):
+#         if key == 'edge_index_a':
+#             return self.x_a.size(0)
+#         if key == 'edge_index_b':
+#             return self.x_b.size(0)
+#         else:
+#             return super().__inc__(key, value)
         
-    def __inc__(self, key, value):
+# Since PyG 2.0
+    def __inc__(self, key, value, *args, **kwargs):
         if key == 'edge_index_a':
             return self.x_a.size(0)
         if key == 'edge_index_b':
             return self.x_b.size(0)
         else:
-            return super().__inc__(key, value)
+            return super().__inc__(key, value, *args, **kwargs)
         
     @property
     def num_node_features(self):

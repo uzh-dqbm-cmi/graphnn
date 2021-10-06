@@ -1,5 +1,7 @@
 # source: https://github.com/snap-stanford/ogb/blob/153e37636009cac0aeb388073ab6df9f3b2792bf/examples/graphproppred/mol/gnn.py
 
+# import math
+
 # import numpy as np
 import torch
 from torch import nn
@@ -103,6 +105,7 @@ class DeepAdr_SiameseTrf(nn.Module):
         super().__init__()
         
         self.do_softmax = do_softmax
+        self.num_classes = num_classes
         
         if dist == 'euclidean':
             self.dist = nn.PairwiseDistance(p=2, keepdim=True)
@@ -114,20 +117,24 @@ class DeepAdr_SiameseTrf(nn.Module):
             self.dist = nn.CosineSimilarity(dim=1)
             self.alpha = 1
 
-        self.Wy = nn.Linear(2*input_dim+1+expression_dim, expression_dim)
+        self.Wy = nn.Linear(2*input_dim+1, num_classes)
+        
+        self.Wy_ze = nn.Linear(2*input_dim+1+expression_dim, expression_dim)
         self.Wy2 = nn.Linear(expression_dim, num_classes)
+        
         self.drop = nn.Dropout(drop)
         # perform log softmax on the feature dimension
         self.log_softmax = nn.LogSoftmax(dim=-1)
 
         self._init_params_()
         print('updated')
+        print('num classes:', self.num_classes)
         
         
     def _init_params_(self):
         _init_model_params(self.named_parameters())
     
-    def forward(self, Z_a, Z_b, Z_e):
+    def forward(self, Z_a, Z_b, Z_e=None):
         """
         Args:
             Z_a: tensor, (batch, embedding dim)
@@ -138,11 +145,18 @@ class DeepAdr_SiameseTrf(nn.Module):
         # update dist to distance measure if cosine is chosen
         dist = self.alpha * (1-dist) + (1-self.alpha) * dist
         
-        out = torch.cat([Z_a, Z_b, dist, Z_e], axis=-1)
-        y = self.Wy(out)
-        y = self.drop(y)
-        y = self.Wy2(y)
-
+        if (Z_e is not None):
+            out = torch.cat([Z_a, Z_b, dist, Z_e], axis=-1)
+            y = self.Wy_ze(out)
+            y = self.drop(y)
+            y = self.Wy2(y)
+        else:
+            out = torch.cat([Z_a, Z_b, dist], axis=-1)
+            y = self.Wy(out)
+            
+        if (self.num_classes == 0):
+            return out, dist
+        
         
         if self.do_softmax:
             return self.log_softmax(y), dist
@@ -152,6 +166,12 @@ class DeepAdr_SiameseTrf(nn.Module):
 class ExpressionNN(nn.Module):
     def __init__(self, D_in=8785, H1=800, H2=300, D_out=64, drop=0.5):
         super(ExpressionNN, self).__init__()
+        
+        self.kernel = (3,1)
+        self.conv1 = nn.Conv2d(1, 32, self.kernel)
+        D_in = D_in // self.kernel[0] -(self.kernel[0]%2)
+#         print("D_in", D_in)
+
         # an affine operation: y = Wx + b
         self.fc1 = nn.Linear(D_in, H1) # Fully Connected
         self.fc2 = nn.Linear(H1, H2)
@@ -160,6 +180,17 @@ class ExpressionNN(nn.Module):
         self._init_weights()
 
     def forward(self, x):
+        
+#         print("x.shape:", x.shape)
+        x = x.unsqueeze(1).unsqueeze(-1)
+        x = F.max_pool2d(F.relu(self.conv1(x)), self.kernel)
+#         print("x.shape:", x.shape)
+        x, _ = torch.max(x, 1)
+#         print("x.shape:", x.shape)
+        x = torch.flatten(x, 1)
+#         print("x.shape:", x.shape)
+
+
         x = F.relu(self.fc1(x))
         x = self.drop(x)
         x = F.relu(self.fc2(x))

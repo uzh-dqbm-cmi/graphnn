@@ -1,4 +1,4 @@
-from descriptastorus.descriptors import rdDescriptors, rdNormalizedDescriptors
+# from descriptastorus.descriptors import rdDescriptors, rdNormalizedDescriptors
 import os
 import pickle
 import collections

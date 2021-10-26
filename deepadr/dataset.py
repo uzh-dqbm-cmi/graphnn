@@ -145,8 +145,8 @@ class MoleculeDataset(InMemoryDataset):
                 data.id = torch.tensor(
                     [i])  # id here is the index of the mol in
                 # the dataset
-                data.y = torch.tensor([y[i]])
-                data.expression = torch.tensor([expression[i]])
+                data.y = torch.tensor([y[i]], dtype=torch.int32)
+                data.expression = torch.tensor([expression[i]], dtype=torch.float32)
                 data_list.append(data)                 
 
         else:

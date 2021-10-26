@@ -147,9 +147,9 @@ def smiles_to_graph_data_obj_ogb(smiles):
     assert(len(graph['node_feat']) == graph['num_nodes'])
 
     data.__num_nodes__ = int(graph['num_nodes'])
-    data.edge_index = torch.from_numpy(graph['edge_index']).to(torch.int64)
-    data.edge_attr = torch.from_numpy(graph['edge_feat']).to(torch.int64)
-    data.x = torch.from_numpy(graph['node_feat']).to(torch.int64)
+    data.edge_index = torch.from_numpy(graph['edge_index']).to(torch.int32)
+    data.edge_attr = torch.from_numpy(graph['edge_feat']).to(torch.int32)
+    data.x = torch.from_numpy(graph['node_feat']).to(torch.int32)
     return data
 
 # # https://github.com/kexinhuang12345/DeepPurpose/blob/master/DeepPurpose/utils.py

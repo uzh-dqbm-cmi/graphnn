@@ -81,7 +81,7 @@ class GNN(torch.nn.Module):
 #             print("h_graph_cat shape:", h_graph_cat.shape)
             
             h_graph = h_graph_cat.reshape(h_graph_cat.shape[0], len(h_graphs), h_graph_cat.shape[1] // len(h_graphs))
-#             print("h_graph shape:", h_graph.shape)
+            print("h_graph shape:", h_graph.shape)
 
         else:
             h_graph = self.pool(h_node, batch)

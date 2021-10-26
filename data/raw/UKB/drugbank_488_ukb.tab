@@ -1,0 +1,489 @@
+DrugName	DrugBank	SMILES
+doxepin	DB01142	CN(C)CC/C=C/1\C2=CC=CC=C2COC3=CC=CC=C31
+amiloride	DB00594	C1(=C(N=C(C(=N1)Cl)N)N)C(=O)N=C(N)N
+selegiline	DB01037	C[C@H](CC1=CC=CC=C1)N(C)CC#C
+carbidopa	DB00190	C[C@](CC1=CC(=C(C=C1)O)O)(C(=O)O)NN
+dapsone	DB00250	C1=CC(=CC=C1N)S(=O)(=O)C2=CC=C(C=C2)N
+levobunolol	DB01210	CC(C)(C)NC[C@@H](COC1=CC=CC2=C1CCCC2=O)O
+phenobarbital	DB01174	CCC1(C(=O)NC(=O)NC1=O)C2=CC=CC=C2
+montelukast	DB00471	CC(C)(C1=CC=CC=C1CC[C@H](C2=CC=CC(=C2)/C=C/C3=NC4=C(C=CC(=C4)Cl)C=C3)SCC5(CC5)CC(=O)O)O
+valproic acid	DB00313	CCCC(CCC)C(=O)O
+tenoxicam	DB00469	CN1C(=C(C2=C(S1(=O)=O)C=CS2)O)C(=O)NC3=CC=CC=N3
+lymecycline	DB00256	C[C@@]1([C@H]2C[C@H]3[C@@H](C(=O)C(=C([C@]3(C(=O)C2=C(C4=C1C=CC=C4O)O)O)O)C(=O)NCNCCCC[C@@H](C(=O)O)N)N(C)C)O
+donepezil	DB00843	COC1=C(C=C2C(=C1)CC(C2=O)CC3CCN(CC3)CC4=CC=CC=C4)OC
+almotriptan	DB00918	CN(C)CCC1=CNC2=C1C=C(C=C2)CS(=O)(=O)N3CCCC3
+methyldopa	DB00422	C[C@](CC1=CC(=C(C=C1)O)O)(C(=O)O)N
+nevirapine	DB00238	CC1=C2C(=NC=C1)N(C3=C(C=CC=N3)C(=O)N2)C4CC4
+atorvastatin	DB01076	CC(C)C1=C(C(=C(N1CC[C@H](C[C@H](CC(=O)O)O)O)C2=CC=C(C=C2)F)C3=CC=CC=C3)C(=O)NC4=CC=CC=C4
+oxprenolol	DB01580	CC(C)NCC(COC1=CC=CC=C1OCC=C)O
+sulindac	DB00605	CC\1=C(C2=C(/C1=C\C3=CC=C(C=C3)S(=O)C)C=CC(=C2)F)CC(=O)O
+rosuvastatin	DB01098	CC(C)C1=NC(=NC(=C1/C=C/[C@H](C[C@H](CC(=O)O)O)O)C2=CC=C(C=C2)F)N(C)S(=O)(=O)C
+clindamycin	DB01190	CCC[C@@H]1C[C@H](N(C1)C)C(=O)N[C@@H]([C@@H]2[C@@H]([C@@H]([C@H]([C@H](O2)SC)O)O)O)[C@H](C)Cl
+famciclovir	DB00426	CC(=O)OCC(CCN1C=NC2=CN=C(N=C21)N)COC(=O)C
+etodolac	DB00749	CCC1=C2C(=CC=C1)C3=C(N2)C(OCC3)(CC)CC(=O)O
+pamidronate	DB00282	C(CN)C(O)(P(=O)(O)O)P(=O)(O)O
+terfenadine	DB00342	CC(C)(C)C1=CC=C(C=C1)C(CCCN2CCC(CC2)C(C3=CC=CC=C3)(C4=CC=CC=C4)O)O
+crotamiton	DB00265	CCN(C1=CC=CC=C1C)C(=O)/C=C/C
+solifenacin	DB01591	C1CN2CCC1[C@H](C2)OC(=O)N3CCC4=CC=CC=C4[C@@H]3C5=CC=CC=C5
+nefopam hydrochloride	DB12293	CN1CCOC(C2=CC=CC=C2C1)C3=CC=CC=C3.Cl
+ketorolac	DB00465	C1CN2C(=CC=C2C(=O)C3=CC=CC=C3)C1C(=O)O
+hexamethylenetetramine	DB06799	C1N2CN3CN1CN(C2)C3
+bisoprolol	DB00612	CC(C)NCC(COC1=CC=C(C=C1)COCCOC(C)C)O
+clobetasol	DB11750	C[C@H]1C[C@H]2[C@@H]3CCC4=CC(=O)C=C[C@@]4([C@]3([C@H](C[C@@]2([C@]1(C(=O)CCl)O)C)O)F)C
+clozapine	DB00363	CN1CCN(CC1)C2=NC3=C(C=CC(=C3)Cl)NC4=CC=CC=C42
+desloratadine	DB00967	C1CC2=C(C=CC(=C2)Cl)C(=C3CCNCC3)C4=C1C=CC=N4
+danazol	DB01406	C[C@]12CC[C@H]3[C@H]([C@@H]1CC[C@]2(C#C)O)CCC4=CC5=C(C[C@]34C)C=NO5
+chlorthalidone	DB00310	C1=CC=C2C(=C1)C(=O)NC2(C3=CC(=C(C=C3)Cl)S(=O)(=O)N)O
+hydrochlorothiazide	DB00999	C1NC2=CC(=C(C=C2S(=O)(=O)N1)S(=O)(=O)N)Cl
+domperidone	DB01184	C1CN(CCC1N2C3=C(C=C(C=C3)Cl)NC2=O)CCCN4C5=CC=CC=C5NC4=O
+promethazine	DB01069	CC(CN1C2=CC=CC=C2SC3=CC=CC=C31)N(C)C
+zidovudine	DB00495	CC1=CN(C(=O)NC1=O)[C@H]2C[C@@H]([C@H](O2)CO)N=[N+]=[N-]
+ramipril	DB00178	CCOC(=O)[C@H](CCC1=CC=CC=C1)N[C@@H](C)C(=O)N2[C@H]3CCC[C@H]3C[C@H]2C(=O)O
+nitrofurantoin	DB00698	C1C(=O)NC(=O)N1/N=C/C2=CC=C(O2)[N+](=O)[O-]
+aminophylline	DB01223	CN1C2=C(C(=O)N(C1=O)C)NC=N2.CN1C2=C(C(=O)N(C1=O)C)NC=N2.C(CN)N
+glipizide	DB01067	CC1=CN=C(C=N1)C(=O)NCCC2=CC=C(C=C2)S(=O)(=O)NC(=O)NC3CCCCC3
+topiramate	DB00273	CC1(O[C@@H]2CO[C@@]3([C@H]([C@@H]2O1)OC(O3)(C)C)COS(=O)(=O)N)C
+ergotamine	DB00696	C[C@@]1(C(=O)N2[C@H](C(=O)N3CCC[C@H]3[C@@]2(O1)O)CC4=CC=CC=C4)NC(=O)[C@H]5CN([C@@H]6CC7=CNC8=CC=CC(=C78)C6=C5)C
+glucosamine	DB01296	C([C@@H]1[C@H]([C@@H]([C@H](C(O1)O)N)O)O)O
+moxonidine	DB09242	CC1=NC(=C(C(=N1)Cl)NC2=NCCN2)OC
+lorazepam	DB00186	C1=CC=C(C(=C1)C2=NC(C(=O)NC3=C2C=C(C=C3)Cl)O)Cl
+methylphenidate	DB00959	COC(=O)C(C1CCCCN1)C2=CC=CC=C2
+terazosin	DB01162	COC1=C(C=C2C(=C1)C(=NC(=N2)N3CCN(CC3)C(=O)C4CCCO4)N)OC
+trazodone	DB00656	C1CN(CCN1CCCN2C(=O)N3C=CC=CC3=N2)C4=CC(=CC=C4)Cl
+bromocriptine	DB01200	CC(C)C[C@H]1C(=O)N2CCC[C@H]2[C@]3(N1C(=O)[C@](O3)(C(C)C)NC(=O)[C@H]4CN([C@@H]5CC6=C(NC7=CC=CC(=C67)C5=C4)Br)C)O
+cyclizine	DB01176	CN1CCN(CC1)C(C2=CC=CC=C2)C3=CC=CC=C3
+allopurinol	DB00437	C1=NNC2=C1C(=O)NC=N2
+betamethasone	DB00443	C[C@H]1C[C@H]2[C@@H]3CCC4=CC(=O)C=C[C@@]4([C@]3([C@H](C[C@@]2([C@]1(C(=O)CO)O)C)O)F)C
+cilostazol	DB01166	C1CCC(CC1)N2C(=NN=N2)CCCCOC3=CC4=C(C=C3)NC(=O)CC4
+imidapril	DB11783	CCOC(=O)[C@H](CCC1=CC=CC=C1)N[C@@H](C)C(=O)N2[C@@H](CN(C2=O)C)C(=O)O
+niacin	DB00627	C1=CC(=CN=C1)C(=O)O
+erythropoietin	DB00016	CCCCC1=NC(=C(N1CC2=CC=C(C=C2)C3=CC=CC=C3C4=NN=N[N-]4)CO)Cl.[K+]
+methocarbamol	DB00423	COC1=CC=CC=C1OCC(COC(=O)N)O
+nicorandil	DB09220	C1=CC(=CN=C1)C(=O)NCCO[N+](=O)[O-]
+ibandronate	DB00710	CCCCCN(C)CCC(O)(P(=O)(O)O)P(=O)(O)O
+anastrozole	DB01217	CC(C)(C#N)C1=CC(=CC(=C1)CN2C=NC=N2)C(C)(C)C#N
+magnesium trisilicate	DB09281	[O-][Si](=O)O[Si]([O-])([O-])O[Si](=O)[O-].[Mg+2].[Mg+2]
+hydralazine	DB01275	C1=CC=C2C(=C1)C=NN=C2NN
+naratriptan	DB00952	CNS(=O)(=O)CCC1=CC2=C(C=C1)NC=C2C3CCN(CC3)C
+venlafaxine	DB00285	CN(C)CC(C1=CC=C(C=C1)OC)C2(CCCCC2)O
+carvedilol	DB01136	COC1=CC=CC=C1OCCNCC(COC2=CC=CC3=C2C4=CC=CC=C4N3)O
+magnesium carbonate	DB09481	C(=O)([O-])[O-].[Mg+2]
+repaglinide	DB00912	CCOC1=C(C=CC(=C1)CC(=O)N[C@@H](CC(C)C)C2=CC=CC=C2N3CCCCC3)C(=O)O
+pioglitazone	DB01132	CCC1=CN=C(C=C1)CCOC2=CC=C(C=C2)CC3C(=O)NC(=O)S3
+pseudoephedrine	DB00852	C[C@@H]([C@H](C1=CC=CC=C1)O)NC
+emtricitabine	DB00879	C1[C@H](O[C@H](S1)CO)N2C=C(C(=NC2=O)N)F
+hydroxyzine	DB00557	C1CN(CCN1CCOCCO)C(C2=CC=CC=C2)C3=CC=C(C=C3)Cl
+mebeverine	DB12554	CCN(CCCCOC(=O)C1=CC(=C(C=C1)OC)OC)C(C)CC2=CC=C(C=C2)OC
+acamprosate	DB00659	CC(=O)NCCCS(=O)(=O)O
+theophylline	DB00277	CN1C2=C(C(=O)N(C1=O)C)NC=N2
+flecainide	DB01195	C1CCNC(C1)CNC(=O)C2=C(C=CC(=C2)OCC(F)(F)F)OCC(F)(F)F
+xipamide	DB13803	CC1=C(C(=CC=C1)C)NC(=O)C2=CC(=C(C=C2O)Cl)S(=O)(=O)N
+nabumetone	DB00461	CC(=O)CCC1=CC2=C(C=C1)C=C(C=C2)OC
+propranolol	DB00571	CC(C)NCC(COC1=CC=CC2=CC=CC=C21)O
+trihexyphenidyl	DB00376	C1CCC(CC1)C(CCN2CCCCC2)(C3=CC=CC=C3)O
+menthol	DB00825	CC1CCC(C(C1)O)C(C)C
+calcium	DB01373	[Ca]
+fluorouracil	DB00544	C1=C(C(=O)NC(=O)N1)F
+aluminum hydroxide	DB06723	[OH-].[OH-].[OH-].[Al+3]
+alprostadil	DB00770	CCCCC[C@@H](/C=C/[C@H]1[C@@H](CC(=O)[C@@H]1CCCCCCC(=O)O)O)O
+cinacalcet	DB01012	C[C@H](C1=CC=CC2=CC=CC=C21)NCCCC3=CC(=CC=C3)C(F)(F)F
+lacidipine	DB09236	CCOC(=O)C1=C(NC(=C(C1C2=CC=CC=C2/C=C/C(=O)OC(C)(C)C)C(=O)OCC)C)C
+zolpidem	DB00425	CC1=CC=C(C=C1)C2=C(N3C=C(C=CC3=N2)C)CC(=O)N(C)C
+sildenafil	DB00203	CCCC1=NN(C2=C1N=C(NC2=O)C3=C(C=CC(=C3)S(=O)(=O)N4CCN(CC4)C)OCC)C
+propantheline	DB00782	CC(C)[N+](C)(CCOC(=O)C1C2=CC=CC=C2OC3=CC=CC=C13)C(C)C
+diphenhydramine	DB01075	CN(C)CCOC(C1=CC=CC=C1)C2=CC=CC=C2
+nizatidine	DB00585	CN/C(=C\[N+](=O)[O-])/NCCSCC1=CSC(=N1)CN(C)C
+misoprostol	DB00929	CCCCC(C)(C/C=C/[C@H]1[C@@H](CC(=O)[C@@H]1CCCCCCC(=O)OC)O)O
+dipyridamole	DB00975	C1CCN(CC1)C2=NC(=NC3=C2N=C(N=C3N4CCCCC4)N(CCO)CCO)N(CCO)CCO
+tolbutamide	DB01124	CCCCNC(=O)NS(=O)(=O)C1=CC=C(C=C1)C
+reboxetine	DB00234	CCOC1=CC=CC=C1O[C@@H]([C@H]2CNCCO2)C3=CC=CC=C3
+dicycloverine hydrochloride	DB00804	CCN(CC)CCOC(=O)C1(CCCCC1)C2CCCCC2.Cl
+minocycline	DB01017	CN(C)[C@H]1[C@@H]2C[C@@H]3CC4=C(C=CC(=C4C(=C3C(=O)[C@@]2(C(=C(C1=O)C(=O)N)O)O)O)O)N(C)C
+warfarin	DB00682	CC(=O)CC(C1=CC=CC=C1)C2=C(C3=CC=CC=C3OC2=O)O
+sulpiride	DB00391	CCN1CCCC1CNC(=O)C2=C(C=CC(=C2)S(=O)(=O)N)OC
+cupric sulfate	DB06778	[O-]S(=O)(=O)[O-].[Cu+2]
+methylprednisolone	DB09543	C[C@H]1C[C@H]2[C@@H]3CC[C@@]([C@]3(C[C@@H]([C@@H]2[C@@]4(C1=CC(=O)C=C4)C)O)C)(C(=O)CO)O
+tolterodine	DB01036	CC1=CC(=C(C=C1)O)[C@H](CCN(C(C)C)C(C)C)C2=CC=CC=C2
+cefradine	DB01333	CC1=C(N2[C@@H]([C@@H](C2=O)NC(=O)[C@@H](C3=CCC=CC3)N)SC1)C(=O)O
+cyproterone acetate	DB04839	CC(=O)[C@]1(CC[C@@H]2[C@@]1(CC[C@H]3[C@H]2C=C(C4=CC(=O)[C@@H]5C[C@@H]5[C@]34C)Cl)C)OC(=O)C
+clomipramine	DB01242	CN(C)CCCN1C2=CC=CC=C2CCC3=C1C=C(C=C3)Cl
+dexamethasone	DB01234	C[C@@H]1C[C@H]2[C@@H]3CCC4=CC(=O)C=C[C@@]4([C@]3([C@H](C[C@@]2([C@]1(C(=O)CO)O)C)O)F)C
+ergocalciferol	DB00153	C[C@H](/C=C/[C@H](C)C(C)C)[C@H]1CC[C@@H]\2[C@@]1(CCC/C2=C\C=C/3\C[C@H](CCC3=C)O)C
+levetiracetam	DB01202	CC[C@@H](C(=O)N)N1CCCC1=O
+fosamprenavir	DB01319	CC(C)CN(C[C@H]([C@H](CC1=CC=CC=C1)NC(=O)O[C@H]2CCOC2)OP(=O)(O)O)S(=O)(=O)C3=CC=C(C=C3)N
+colchicine	DB01394	CC(=O)N[C@H]1CCC2=CC(=C(C(=C2C3=CC=C(C(=O)C=C13)OC)OC)OC)OC
+perphenazine	DB00850	C1CN(CCN1CCCN2C3=CC=CC=C3SC4=C2C=C(C=C4)Cl)CCO
+pilocarpine	DB01085	CC[C@H]1[C@H](COC1=O)CC2=CN=CN2C
+exemestane	DB00990	C[C@]12CC[C@H]3[C@H]([C@@H]1CCC2=O)CC(=C)C4=CC(=O)C=C[C@]34C
+naftidrofuryl oxalate	DB13588	CCN(CC)CCOC(=O)C(CC1CCCO1)CC2=CC=CC3=CC=CC=C32.C(=O)(C(=O)O)O
+phenytoin	DB00252	C1=CC=C(C=C1)C2(C(=O)NC(=O)N2)C3=CC=CC=C3
+diltiazem	DB00343	CC(=O)O[C@@H]1[C@@H](SC2=CC=CC=C2N(C1=O)CCN(C)C)C3=CC=C(C=C3)OC
+simethicone	DB09512	CO[Si](C)(C)O[Si](C)(C)C.O=[Si]=O
+omeprazole	DB00338	CC1=CN=C(C(=C1OC)C)CS(=O)C2=NC3=C(N2)C=C(C=C3)OC
+fluticasone propionate	DB00588	CCC(=O)O[C@@]1([C@@H](C[C@@H]2[C@@]1(C[C@@H]([C@]3([C@H]2C[C@@H](C4=CC(=O)C=C[C@@]43C)F)F)O)C)C)C(=O)SCF
+folic acid	DB00158	C1=CC(=CC=C1C(=O)N[C@@H](CCC(=O)O)C(=O)O)NCC2=CN=C3C(=N2)C(=O)NC(=N3)N
+amantadine	DB00915	C1C2CC3CC1CC(C2)(C3)N
+neomycin	DB00994	C1[C@H]([C@@H]([C@H]([C@@H]([C@H]1N)O[C@@H]2[C@@H]([C@H]([C@@H]([C@H](O2)CN)O)O)N)O[C@H]3[C@@H]([C@@H]([C@H](O3)CO)O[C@@H]4[C@@H]([C@H]([C@@H]([C@@H](O4)CN)O)O)N)O)O)N
+prazosin	DB00457	COC1=C(C=C2C(=C1)C(=NC(=N2)N3CCN(CC3)C(=O)C4=CC=CO4)N)OC
+brimonidine	DB00484	C1CN=C(N1)NC2=C(C3=NC=CN=C3C=C2)Br
+cyclophosphamide	DB00531	C1CNP(=O)(OC1)N(CCCl)CCCl
+epinephrine	DB00668	CNC[C@@H](C1=CC(=C(C=C1)O)O)O
+mefenamic acid	DB00784	CC1=C(C(=CC=C1)NC2=CC=CC=C2C(=O)O)C
+felodipine	DB01023	CCOC(=O)C1=C(NC(=C(C1C2=C(C(=CC=C2)Cl)Cl)C(=O)OC)C)C
+dimethicone	DB11074	C[Si](C)(C)O[Si](C)(C)O[Si](C)(C)C
+tiaprofenic acid	DB01600	CC(C1=CC=C(S1)C(=O)C2=CC=CC=C2)C(=O)O
+brinzolamide	DB01194	CCN[C@H]1CN(S(=O)(=O)C2=C1C=C(S2)S(=O)(=O)N)CCCOC
+flurandrenolide	DB00846	C[C@]12CCC(=O)C=C1[C@H](C[C@@H]3[C@@H]2[C@H](C[C@]4([C@H]3C[C@@H]5[C@]4(OC(O5)(C)C)C(=O)CO)C)O)F
+carbamazepine	DB00564	C1=CC=C2C(=C1)C=CC3=CC=CC=C3N2C(=O)N
+ethosuximide	DB00593	CCC1(CC(=O)NC1=O)C
+valsartan	DB00177	CCCCC(=O)N(CC1=CC=C(C=C1)C2=CC=CC=C2C3=NNN=N3)[C@@H](C(C)C)C(=O)O
+lormetazepam	DB13872	CN1C2=C(C=C(C=C2)Cl)C(=NC(C1=O)O)C3=CC=CC=C3Cl
+triamterene	DB00384	C1=CC=C(C=C1)C2=NC3=C(N=C(N=C3N=C2N)N)N
+aciclovir	DB00787	C1=NC2=C(N1COCCO)N=C(NC2=O)N
+bimatoprost	DB00905	CCNC(=O)CCC/C=C\C[C@H]1[C@H](C[C@H]([C@@H]1/C=C/[C@H](CCC2=CC=CC=C2)O)O)O
+calcitriol	DB00136	C[C@H](CCCC(C)(C)O)[C@H]1CC[C@@H]\2[C@@]1(CCC/C2=C\C=C/3\C[C@H](C[C@@H](C3=C)O)O)C
+zopiclone	DB01198	CN1CCN(CC1)C(=O)OC2C3=NC=CN=C3C(=O)N2C4=NC=C(C=C4)Cl
+bisacodyl	DB09020	CC(=O)OC1=CC=C(C=C1)C(C2=CC=C(C=C2)OC(=O)C)C3=CC=CC=N3
+fenofibrate	DB01039	CC(C)OC(=O)C(C)(C)OC1=CC=C(C=C1)C(=O)C2=CC=C(C=C2)Cl
+frovatriptan	DB00998	CN[C@@H]1CCC2=C(C1)C3=C(N2)C=CC(=C3)C(=O)N
+abacavir	DB01048	C1CC1NC2=C3C(=NC(=N2)N)N(C=N3)[C@@H]4C[C@@H](C=C4)CO
+alfacalcidol	DB01436	C[C@H](CCCC(C)C)[C@H]1CC[C@@H]\2[C@@]1(CCC/C2=C\C=C/3\C[C@H](C[C@@H](C3=C)O)O)C
+cefadroxil	DB01140	CC1=C(N2[C@@H]([C@@H](C2=O)NC(=O)[C@@H](C3=CC=C(C=C3)O)N)SC1)C(=O)O
+didanosine	DB00900	C1C[C@@H](O[C@@H]1CO)N2C=NC3=C2N=CNC3=O
+escitalopram	DB01175	CN(C)CCC[C@@]1(C2=C(CO1)C=C(C=C2)C#N)C3=CC=C(C=C3)F
+gemfibrozil	DB01241	CC1=CC(=C(C=C1)C)OCCCC(C)(C)C(=O)O
+formoterol	DB00983	CC(CC1=CC=C(C=C1)OC)NCC(C2=CC(=C(C=C2)O)NC=O)O
+lercanidipine	DB00528	CC1=C(C(C(=C(N1)C)C(=O)OC(C)(C)CN(C)CCC(C2=CC=CC=C2)C3=CC=CC=C3)C4=CC(=CC=C4)[N+](=O)[O-])C(=O)OC
+betahistine	DB06698	CNCCC1=CC=CC=N1
+perindopril	DB00790	CCC[C@@H](C(=O)OCC)N[C@@H](C)C(=O)N1[C@H]2CCCC[C@H]2C[C@H]1C(=O)O
+morphine	DB00295	CN1CC[C@]23[C@@H]4[C@H]1CC5=C2C(=C(C=C5)O)O[C@H]3[C@H](C=C4)O
+magnesium hydroxide	DB09104	[OH-].[OH-].[Mg+2]
+digoxin	DB00390	C[C@@H]1[C@H]([C@H](C[C@@H](O1)O[C@@H]2[C@H](O[C@H](C[C@@H]2O)O[C@@H]3[C@H](O[C@H](C[C@@H]3O)O[C@H]4CC[C@]5([C@@H](C4)CC[C@@H]6[C@@H]5C[C@H]([C@]7([C@@]6(CC[C@@H]7C8=CC(=O)OC8)O)C)O)C)C)C)O)O
+chlorphenamine	DB01114	CN(C)CCC(C1=CC=C(C=C1)Cl)C2=CC=CC=N2
+colestipol	DB00375	C1C(O1)CCl.C(CNCCNCCNCCN)N
+carbocisteine	DB04339	C([C@@H](C(=O)O)N)SCC(=O)O
+etoricoxib	DB01628	CC1=NC=C(C=C1)C2=C(C=C(C=N2)Cl)C3=CC=C(C=C3)S(=O)(=O)C
+hydroxychloroquine	DB01611	CCN(CCCC(C)NC1=C2C=CC(=CC2=NC=C1)Cl)CCO
+difluocortolone	DB09095	C[C@@H]1C[C@H]2[C@@H]3C[C@@H](C4=CC(=O)C=C[C@@]4([C@]3([C@H](C[C@@]2([C@H]1C(=O)CO)C)O)F)C)F
+ropinirole	DB00268	CCCN(CCC)CCC1=C2CC(=O)NC2=CC=C1
+cinchocaine	DB00527	CCCCOC1=NC2=CC=CC=C2C(=C1)C(=O)NCCN(CC)CC
+fluocinolone acetonide	DB00591	C[C@]12C[C@@H]([C@]3([C@H]([C@@H]1C[C@@H]4[C@]2(OC(O4)(C)C)C(=O)CO)C[C@@H](C5=CC(=O)C=C[C@@]53C)F)F)O
+pramipexole	DB00413	CCCN[C@H]1CCC2=C(C1)SC(=N2)N
+risperidone	DB00734	CC1=C(C(=O)N2CCCCC2=N1)CCN3CCC(CC3)C4=NOC5=C4C=CC(=C5)F
+levothyroxine	DB00451	C1=C(C=C(C(=C1I)OC2=CC(=C(C(=C2)I)O)I)I)C[C@@H](C(=O)O)N
+fentanyl	DB00813	CCC(=O)N(C1CCN(CC1)CCC2=CC=CC=C2)C3=CC=CC=C3
+prednisolone	DB00860	C[C@]12C[C@@H]([C@H]3[C@H]([C@@H]1CC[C@@]2(C(=O)CO)O)CCC4=CC(=O)C=C[C@]34C)O
+scopolamine butylbromide	DB09300	CCCC[N+]1([C@@H]2CC(C[C@H]1[C@H]3[C@@H]2O3)OC(=O)[C@H](CO)C4=CC=CC=C4)C.[Br-]
+telmisartan	DB00966	CCCC1=NC2=C(N1CC3=CC=C(C=C3)C4=CC=CC=C4C(=O)O)C=C(C=C2C)C5=NC6=CC=CC=C6N5C
+imatinib	DB00619	CC1=C(C=C(C=C1)NC(=O)C2=CC=C(C=C2)CN3CCN(CC3)C)NC4=NC=CC(=N4)C5=CN=CC=C5
+lopinavir	DB01601	CC1=C(C(=CC=C1)C)OCC(=O)N[C@@H](CC2=CC=CC=C2)[C@H](C[C@H](CC3=CC=CC=C3)NC(=O)[C@H](C(C)C)N4CCCNC4=O)O
+rifampicin	DB01045	C[C@H]1/C=C/C=C(\C(=O)NC2=C(C(=C3C(=C2O)C(=C(C4=C3C(=O)[C@](O4)(O/C=C/[C@@H]([C@H]([C@H]([C@@H]([C@@H]([C@@H]([C@H]1O)C)O)C)OC(=O)C)C)OC)C)C)O)O)/C=N/N5CCN(CC5)C)/C
+alverine	DB01616	CCN(CCCC1=CC=CC=C1)CCCC2=CC=CC=C2
+ritonavir	DB00503	CC(C)C1=NC(=CS1)CN(C)C(=O)N[C@@H](C(C)C)C(=O)N[C@@H](CC2=CC=CC=C2)C[C@@H]([C@H](CC3=CC=CC=C3)NC(=O)OCC4=CN=CS4)O
+trimethoprim	DB00440	COC1=CC(=CC(=C1OC)OC)CC2=CN=C(N=C2N)N
+triamcinolone	DB00620	C[C@]12C[C@@H]([C@]3([C@H]([C@@H]1C[C@H]([C@@]2(C(=O)CO)O)O)CCC4=CC(=O)C=C[C@@]43C)F)O
+nebivolol	DB04861	C1CC2=C(C=CC(=C2)F)OC1C(CNCC(C3CCC4=C(O3)C=CC(=C4)F)O)O
+methotrexate	DB00563	CN(CC1=CN=C2C(=N1)C(=NC(=N2)N)N)C3=CC=C(C=C3)C(=O)N[C@@H](CCC(=O)O)C(=O)O
+tranylcypromine	DB00752	C1C(C1N)C2=CC=CC=C2
+azelastine	DB00972	CN1CCCC(CC1)N2C(=O)C3=CC=CC=C3C(=N2)CC4=CC=C(C=C4)Cl
+lisinopril	DB00722	C1C[C@H](N(C1)C(=O)[C@H](CCCCN)N[C@@H](CCC2=CC=CC=C2)C(=O)O)C(=O)O
+estrone sulfate	DB04574	C[C@]12CC[C@H]3[C@H]([C@@H]1CCC2=O)CCC4=C3C=CC(=C4)OS(=O)(=O)O
+nateglinide	DB00731	CC(C)C1CCC(CC1)C(=O)N[C@H](CC2=CC=CC=C2)C(=O)O
+mefloquine	DB00358	C1CCNC(C1)C(C2=CC(=NC3=C2C=CC=C3C(F)(F)F)C(F)(F)F)O
+indoramin	DB08950	C1CN(CCC1NC(=O)C2=CC=CC=C2)CCC3=CNC4=CC=CC=C43
+cyclopenthiazide	DB13532	C1CCC(C1)CC2NC3=CC(=C(C=C3S(=O)(=O)N2)S(=O)(=O)N)Cl
+pregabalin	DB00230	CC(C)C[C@@H](CC(=O)O)CN
+desmopressin	DB00035	C1C[C@H](N(C1)C(=O)[C@@H]2CSSCCC(=O)N[C@H](C(=O)N[C@H](C(=O)N[C@H](C(=O)N[C@H](C(=O)N2)CC(=O)N)CCC(=O)N)CC3=CC=CC=C3)CC4=CC=C(C=C4)O)C(=O)N[C@H](CCCN=C(N)N)C(=O)NCC(=O)N
+acemetacin	DB13783	CC1=C(C2=C(N1C(=O)C3=CC=C(C=C3)Cl)C=CC(=C2)OC)CC(=O)OCC(=O)O
+oxycodone	DB00497	CN1CC[C@]23[C@@H]4C(=O)CC[C@]2([C@H]1CC5=C3C(=C(C=C5)OC)O4)O
+bupropion	DB01156	CC(C(=O)C1=CC(=CC=C1)Cl)NC(C)(C)C
+tiotropium	DB01409	C[N+]1([C@@H]2CC(C[C@H]1[C@H]3[C@@H]2O3)OC(=O)C(C4=CC=CS4)(C5=CC=CS5)O)C
+thiamine	DB00152	CC1=C(SC=[N+]1CC2=CN=C(N=C2N)C)CCO
+polymyxin b sulfate	DB00781	CCC(C)CCCCC(=O)NC(CCN)C(=O)NC(C(C)O)C(=O)NC(CCN)C(=O)NC1CCNC(=O)C(NC(=O)C(NC(=O)C(NC(=O)C(NC(=O)C(NC(=O)C(NC1=O)CCN)CC2=CC=CC=C2)CC(C)C)CCN)CCN)C(C)O.OS(=O)(=O)O
+candesartan	DB13919	CCOC1=NC2=CC=CC(=C2N1CC3=CC=C(C=C3)C4=CC=CC=C4C5=NNN=N5)C(=O)O
+fludarabine	DB01073	C1=NC2=C(N=C(N=C2N1[C@H]3[C@H]([C@@H]([C@H](O3)CO)O)O)F)N
+tibolone	DB09070	C[C@@H]1CC2=C(CCC(=O)C2)[C@@H]3[C@@H]1[C@@H]4CC[C@]([C@]4(CC3)C)(C#C)O
+gliclazide	DB01120	CC1=CC=C(C=C1)S(=O)(=O)NC(=O)NN2CC3CCCC3C2
+mycophenolic acid	DB01024	CC1=C2COC(=O)C2=C(C(=C1OC)C/C=C(\C)/CCC(=O)O)O
+ciprofibrate	DB09064	CC(C)(C(=O)O)OC1=CC=C(C=C1)C2CC2(Cl)Cl
+naproxen	DB00788	C[C@@H](C1=CC2=C(C=C1)C=C(C=C2)OC)C(=O)O
+acebutolol	DB01193	CCCC(=O)NC1=CC(=C(C=C1)OCC(CNC(C)C)O)C(=O)C
+ursodeoxycholic acid	DB01586	C[C@H](CCC(=O)O)[C@H]1CC[C@@H]2[C@@]1(CC[C@H]3[C@H]2[C@H](C[C@H]4[C@@]3(CC[C@H](C4)O)C)O)C
+diclofenac	DB00586	C1=CC=C(C(=C1)CC(=O)O)NC2=C(C=CC=C2Cl)Cl
+caffeine	DB00201	CN1C=NC2=C1C(=O)N(C(=O)N2C)C
+risedronate	DB00884	C1=CC(=CN=C1)CC(O)(P(=O)(O)O)P(=O)(O)O
+cimetidine	DB00501	CC1=C(N=CN1)CSCCNC(=NC)NC#N
+chloroquine	DB00608	CCN(CC)CCCC(C)NC1=C2C=CC(=CC2=NC=C1)Cl
+captopril	DB01197	C[C@H](CS)C(=O)N1CCC[C@H]1C(=O)O
+eletriptan	DB00216	CN1CCC[C@@H]1CC2=CNC3=C2C=C(C=C3)CCS(=O)(=O)C4=CC=CC=C4
+promazine	DB00420	CN(C)CCCN1C2=CC=CC=C2SC3=CC=CC=C31
+lansoprazole	DB00448	CC1=C(C=CN=C1CS(=O)C2=NC3=CC=CC=C3N2)OCC(F)(F)F
+calcium glubionate	DB13142	C([C@@H]1[C@@H]([C@@H]([C@H]([C@@H](O1)O[C@H]([C@@H](CO)O)[C@@H]([C@H](C(=O)[O-])O)O)O)O)O)O.C([C@H]([C@H]([C@@H]([C@H](C(=O)[O-])O)O)O)O)O.O.[Ca+2]
+phenylephrine	DB00388	CNC[C@@H](C1=CC(=CC=C1)O)O
+orlistat	DB01083	CCCCCCCCCCC[C@@H](C[C@H]1[C@@H](C(=O)O1)CCCCCC)OC(=O)[C@H](CC(C)C)NC=O
+disulfiram	DB00822	CCN(CC)C(=S)SSC(=S)N(CC)CC
+acenocoumarol	DB01418	CC(=O)CC(C1=CC=C(C=C1)[N+](=O)[O-])C2=C(C3=CC=CC=C3OC2=O)O
+hydroxyurea	DB01005	C(=O)(N)NO
+acetylsalicylic acid	DB00945	CC(=O)OC1=CC=CC=C1C(=O)O
+oxcarbazepine	DB00776	C1C2=CC=CC=C2N(C3=CC=CC=C3C1=O)C(=O)N
+budesonide	DB01222	CCCC1O[C@@H]2C[C@H]3[C@@H]4CCC5=CC(=O)C=C[C@@]5([C@H]4[C@H](C[C@@]3([C@@]2(O1)C(=O)CO)C)O)C
+cholestyramine	DB01432	CCC1=CC=C(C=C1)C(C)CCC2=CC=C(C=C2)[N+](C)(C)C
+cabergoline	DB00248	CCNC(=O)N(CCCN(C)C)C(=O)[C@@H]1C[C@H]2[C@@H](CC3=CNC4=CC=CC2=C34)N(C1)CC=C
+alfuzosin	DB00346	CN(CCCNC(=O)C1CCCO1)C2=NC3=CC(=C(C=C3C(=N2)N)OC)OC
+lofepramine	DB13411	CN(CCCN1C2=CC=CC=C2CCC3=CC=CC=C31)CC(=O)C4=CC=C(C=C4)Cl
+leucovorin	DB00650	C1C(N(C2=C(N1)N=C(NC2=O)N)C=O)CNC3=CC=C(C=C3)C(=O)N[C@@H](CCC(=O)O)C(=O)O
+terbutaline	DB00871	CC(C)(C)NCC(C1=CC(=CC(=C1)O)O)O
+duloxetine	DB00476	CNCC[C@@H](C1=CC=CS1)OC2=CC=CC3=CC=CC=C32
+oxytetracycline	DB00595	C[C@@]1([C@H]2[C@@H]([C@H]3[C@@H](C(=O)C(=C([C@]3(C(=O)C2=C(C4=C1C=CC=C4O)O)O)O)C(=O)N)N(C)C)O)O
+lamivudine	DB00709	C1[C@H](O[C@H](S1)CO)N2C=CC(=NC2=O)N
+glyburide	DB01016	COC1=C(C=C(C=C1)Cl)C(=O)NCCC2=CC=C(C=C2)S(=O)(=O)NC(=O)NC3CCCCC3
+olmesartan	DB00275	CCCC1=NC(=C(N1CC2=CC=C(C=C2)C3=CC=CC=C3C4=NNN=N4)C(=O)O)C(C)(C)O
+clioquinol	DB04815	C1=CC2=C(C(=C(C=C2Cl)I)O)N=C1
+clobetasone	DB13158	C[C@H]1C[C@H]2[C@@H]3CCC4=CC(=O)C=C[C@@]4([C@]3(C(=O)C[C@@]2([C@]1(C(=O)CCl)O)C)F)C
+mesalazine	DB00244	C1=CC(=C(C=C1N)C(=O)O)O
+propafenone	DB01182	CCCNCC(COC1=CC=CC=C1C(=O)CCC2=CC=CC=C2)O
+prochlorperazine	DB00433	CN1CCN(CC1)CCCN2C3=CC=CC=C3SC4=C2C=C(C=C4)Cl
+disopyramide	DB00280	CC(C)N(CCC(C1=CC=CC=C1)(C2=CC=CC=N2)C(=O)N)C(C)C
+rimexolone	DB00896	CCC(=O)[C@]1([C@@H](C[C@@H]2[C@@]1(C[C@@H]([C@H]3[C@H]2CCC4=CC(=O)C=C[C@]34C)O)C)C)C
+penicillamine	DB00859	CC(C)([C@H](C(=O)O)N)S
+ofloxacin	DB01165	CC1COC2=C3N1C=C(C(=O)C3=CC(=C2N4CCN(CC4)C)F)C(=O)O
+apraclonidine	DB00964	C1CN=C(N1)NC2=C(C=C(C=C2Cl)N)Cl
+enalapril	DB00584	CCOC(=O)[C@H](CCC1=CC=CC=C1)N[C@@H](C)C(=O)N2CCC[C@H]2C(=O)O
+tolfenamic acid	DB09216	CC1=C(C=CC=C1Cl)NC2=CC=CC=C2C(=O)O
+rivastigmine	DB00989	CCN(C)C(=O)OC1=CC=CC(=C1)[C@H](C)N(C)C
+acrivastine	DB09488	CC1=CC=C(C=C1)/C(=C\CN2CCCC2)/C3=CC=CC(=N3)/C=C/C(=O)O
+efavirenz	DB00625	C1CC1C#C[C@]2(C3=C(C=CC(=C3)Cl)NC(=O)O2)C(F)(F)F
+phenelzine	DB00780	C1=CC=C(C=C1)CCNN
+aripiprazole	DB01238	C1CC(=O)NC2=C1C=CC(=C2)OCCCCN3CCN(CC3)C4=C(C(=CC=C4)Cl)Cl
+sodium bicarbonate	DB01390	C(=O)(O)[O-].[Na+]
+olanzapine	DB00334	CC1=CC2=C(S1)NC3=CC=CC=C3N=C2N4CCN(CC4)C
+cilazapril	DB01340	CCOC(=O)[C@H](CCC1=CC=CC=C1)N[C@H]2CCCN3CCC[C@H](N3C2=O)C(=O)O
+amoxicillin	DB01060	CC1([C@@H](N2[C@H](S1)[C@@H](C2=O)NC(=O)[C@@H](C3=CC=C(C=C3)O)N)C(=O)O)C
+meptazinol hydrochloride	DB13478	CCC1(CCCCN(C1)C)C2=CC(=CC=C2)O.Cl
+torasemide	DB00214	CC1=CC(=CC=C1)NC2=C(C=NC=C2)S(=O)(=O)NC(=O)NC(C)C
+amiodarone	DB01118	CCCCC1=C(C2=CC=CC=C2O1)C(=O)C3=CC(=C(C(=C3)I)OCCN(CC)CC)I
+flurbiprofen	DB00712	CC(C1=CC(=C(C=C1)C2=CC=CC=C2)F)C(=O)O
+azathioprine	DB00993	CN1C=NC(=C1SC2=NC=NC3=C2NC=N3)[N+](=O)[O-]
+irbesartan	DB01029	CCCCC1=NC2(CCCC2)C(=O)N1CC3=CC=C(C=C3)C4=CC=CC=C4C5=NNN=N5
+fluoxetine	DB00472	CNCCC(C1=CC=CC=C1)OC2=CC=C(C=C2)C(F)(F)F
+clodronic acid	DB00720	C(P(=O)(O)O)(P(=O)(O)O)(Cl)Cl
+megestrol acetate	DB00351	CC1=C[C@@H]2[C@H](CC[C@]3([C@H]2CC[C@@]3(C(=O)C)OC(=O)C)C)[C@@]4(C1=CC(=O)CC4)C
+primidone	DB00794	CCC1(C(=O)NCNC1=O)C2=CC=CC=C2
+mirtazapine	DB00370	CN1CCN2C(C1)C3=CC=CC=C3CC4=C2N=CC=C4
+zuclopenthixol	DB01624	C1CN(CCN1CC/C=C\2/C3=CC=CC=C3SC4=C2C=C(C=C4)Cl)CCO
+nitrazepam	DB01595	C1C(=O)NC2=C(C=C(C=C2)[N+](=O)[O-])C(=N1)C3=CC=CC=C3
+isoniazid	DB00951	C1=CN=CC=C1C(=O)NN
+orphenadrine	DB01173	CC1=CC=CC=C1C(C2=CC=CC=C2)OCCN(C)C
+pindolol	DB00960	CC(C)NCC(COC1=CC=CC2=C1C=CN2)O
+fluvoxamine	DB00176	COCCCC/C(=N\OCCN)/C1=CC=C(C=C1)C(F)(F)F
+clemastine	DB00283	C[C@@](C1=CC=CC=C1)(C2=CC=C(C=C2)Cl)OCC[C@H]3CCCN3C
+testosterone propionate	DB01420	CCC(=O)O[C@H]1CC[C@@H]2[C@@]1(CC[C@H]3[C@H]2CCC4=CC(=O)CC[C@]34C)C
+zolmitriptan	DB00315	CN(C)CCC1=CNC2=C1C=C(C=C2)C[C@H]3COC(=O)N3
+hydrocortisone	DB00741	C[C@]12CCC(=O)C=C1CC[C@@H]3[C@@H]2[C@H](C[C@]4([C@H]3CC[C@@]4(C(=O)CO)O)C)O
+lodoxamide	DB06794	C1=C(C=C(C(=C1NC(=O)C(=O)O)Cl)NC(=O)C(=O)O)C#N
+norfloxacin	DB01059	CCN1C=C(C(=O)C2=CC(=C(C=C21)N3CCNCC3)F)C(=O)O
+meloxicam	DB00814	CC1=CN=C(S1)NC(=O)C2=C(C3=CC=CC=C3S(=O)(=O)N2C)O
+procyclidine	DB00387	C1CCC(CC1)C(CCN2CCCC2)(C3=CC=CC=C3)O
+sulfadiazine	DB00359	C1=CN=C(N=C1)NS(=O)(=O)C2=CC=C(C=C2)N
+tramadol	DB00193	CN(C)C[C@H]1CCCC[C@@]1(C2=CC(=CC=C2)OC)O
+labetalol	DB00598	CC(CCC1=CC=CC=C1)NCC(C2=CC(=C(C=C2)O)C(=O)N)O
+testosterone undecanoate	DB13946	CCCCCCCCCCC(=O)O[C@H]1CC[C@@H]2[C@@]1(CC[C@H]3[C@H]2CCC4=CC(=O)CC[C@]34C)C
+clobazam	DB00349	CN1C(=O)CC(=O)N(C2=C1C=CC(=C2)Cl)C3=CC=CC=C3
+baclofen	DB00181	C1=CC(=CC=C1C(CC(=O)O)CN)Cl
+oxazepam	DB00842	C1=CC=C(C=C1)C2=NC(C(=O)NC3=C2C=C(C=C3)Cl)O
+chloramphenicol	DB00446	C1=CC(=CC=C1[C@H]([C@@H](CO)NC(=O)C(Cl)Cl)O)[N+](=O)[O-]
+dextran 70	DB09255	CC[C@@H]1C([C@@H]([C@@H](C(O1)COC[C@@H]2C([C@@H]([C@@H](C(O2)COC)O)OC)O)O)O)O
+rosiglitazone	DB00412	CN(CCOC1=CC=C(C=C1)CC2C(=O)NC(=O)S2)C3=CC=CC=N3
+ribavirin	DB00811	C1=NC(=NN1[C@H]2[C@@H]([C@@H]([C@H](O2)CO)O)O)C(=O)N
+celiprolol	DB04846	CCN(CC)C(=O)NC1=CC(=C(C=C1)OCC(CNC(C)(C)C)O)C(=O)C
+loperamide	DB00836	CN(C)C(=O)C(CCN1CCC(CC1)(C2=CC=C(C=C2)Cl)O)(C3=CC=CC=C3)C4=CC=CC=C4
+saquinavir	DB01232	CC(C)(C)NC(=O)[C@@H]1C[C@@H]2CCCC[C@@H]2CN1C[C@H]([C@H](CC3=CC=CC=C3)NC(=O)[C@H](CC(=O)N)NC(=O)C4=NC5=CC=CC=C5C=C4)O
+polyethylene glycol	DB09287	C(CO)O
+nicardipine	DB00622	CC1=C(C(C(=C(N1)C)C(=O)OCCN(C)CC2=CC=CC=C2)C3=CC(=CC=C3)[N+](=O)[O-])C(=O)OC
+sumatriptan	DB00669	CNS(=O)(=O)CC1=CC2=C(C=C1)NC=C2CCN(C)C
+rabeprazole	DB01129	CC1=C(C=CN=C1CS(=O)C2=NC3=CC=CC=C3N2)OCCCOC
+travoprost	DB00287	CC(C)OC(=O)CCC/C=C\C[C@H]1[C@H](C[C@H]([C@@H]1/C=C/[C@H](COC2=CC=CC(=C2)C(F)(F)F)O)O)O
+nortriptyline	DB00540	CNCCC=C1C2=CC=CC=C2CCC3=CC=CC=C31
+ibuprofen	DB01050	CC(C)CC1=CC=C(C=C1)C(C)C(=O)O
+fexofenadine	DB00950	CC(C)(C1=CC=C(C=C1)C(CCCN2CCC(CC2)C(C3=CC=CC=C3)(C4=CC=CC=C4)O)O)C(=O)O
+apomorphine	DB00714	CN1CCC2=C3[C@H]1CC4=C(C3=CC=C2)C(=C(C=C4)O)O
+sertraline	DB01104	CN[C@H]1CC[C@H](C2=CC=CC=C12)C3=CC(=C(C=C3)Cl)Cl
+glimepiride	DB00222	CCC1=C(CN(C1=O)C(=O)NCCC2=CC=C(C=C2)S(=O)(=O)NC(=O)NC3CCC(CC3)C)C
+oxybutynin	DB01062	CCN(CC)CC#CCOC(=O)C(C1CCCCC1)(C2=CC=CC=C2)O
+nadolol	DB01203	CC(C)(C)NCC(COC1=CC=CC2=C1C[C@@H]([C@@H](C2)O)O)O
+tenofovir	DB14126	C[C@H](CN1C=NC2=C(N=CN=C21)N)OCP(=O)(O)O
+ipratropium bromide	DB00332	CC(C)[N+]1([C@@H]2CC[C@H]1CC(C2)OC(=O)C(CO)C3=CC=CC=C3)C.[Br-]
+latanoprost	DB00654	CC(C)OC(=O)CCC/C=C\C[C@H]1[C@H](C[C@H]([C@@H]1CC[C@H](CCC2=CC=CC=C2)O)O)O
+carbimazole	DB00389	CCOC(=O)N1C=CN(C1=S)C
+letrozole	DB01006	C1=CC(=CC=C1C#N)C(C2=CC=C(C=C2)C#N)N3C=NC=N3
+methadone	DB00333	CCC(=O)C(CC(C)N(C)C)(C1=CC=CC=C1)C2=CC=CC=C2
+pergolide	DB01186	CCCN1C[C@@H](C[C@H]2[C@H]1CC3=CNC4=CC=CC2=C34)CSC
+tramazoline	DB13064	C1CCC2=C(C1)C=CC=C2NC3=NCCN3
+nedocromil	DB00716	CCCC1=C2C(=CC3=C1OC(=CC3=O)C(=O)O)C(=O)C=C(N2CC)C(=O)O
+tamoxifen	DB00675	CC/C(=C(\C1=CC=CC=C1)/C2=CC=C(C=C2)OCCN(C)C)/C3=CC=CC=C3
+amisulpride	DB06288	CCN1CCCC1CNC(=O)C2=CC(=C(C=C2OC)N)S(=O)(=O)CC
+acetaminophen	DB00316	CC(=O)NC1=CC=C(C=C1)O
+isometheptene	DB06706	CC(CCC=C(C)C)NC
+temazepam	DB00231	CN1C2=C(C=C(C=C2)Cl)C(=NC(C1=O)O)C3=CC=CC=C3
+citalopram	DB00215	CN(C)CCCC1(C2=C(CO1)C=C(C=C2)C#N)C3=CC=C(C=C3)F
+cinnarizine	DB00568	C1CN(CCN1C/C=C/C2=CC=CC=C2)C(C3=CC=CC=C3)C4=CC=CC=C4
+tadalafil	DB00820	CN1CC(=O)N2[C@@H](C1=O)CC3=C([C@H]2C4=CC5=C(C=C4)OCO5)NC6=CC=CC=C36
+buspirone	DB00490	C1CCC2(C1)CC(=O)N(C(=O)C2)CCCCN3CCN(CC3)C4=NC=CC=N4
+trospium	DB00209	C1CC[N+]2(C1)[C@@H]3CC[C@H]2CC(C3)OC(=O)C(C4=CC=CC=C4)(C5=CC=CC=C5)O
+cyanocobalamin	DB00115	CC1=CC2=C(C=C1C)N(C=N2)[C@@H]3[C@@H]([C@@H]([C@H](O3)CO)OP(=O)([O-])O[C@H](C)CNC(=O)CC[C@@]\4([C@H]([C@@H]5[C@]6([C@@]([C@@H](C(=N6)/C(=C\7/[C@@]([C@@H](C(=N7)/C=C\8/C([C@@H](C(=N8)/C(=C4\[N-]5)/C)CCC(=O)N)(C)C)CCC(=O)N)(C)CC(=O)N)/C)CCC(=O)N)(C)CC(=O)N)C)CC(=O)N)C)O.[C-]#N.[Co]
+olsalazine	DB01250	C1=CC(=C(C=C1N=NC2=CC(=C(C=C2)O)C(=O)O)C(=O)O)O
+azithromycin	DB00207	CC[C@@H]1[C@@]([C@@H]([C@H](N(C[C@@H](C[C@@]([C@@H]([C@H]([C@@H]([C@H](C(=O)O1)C)O[C@H]2C[C@@]([C@H]([C@@H](O2)C)O)(C)OC)C)O[C@H]3[C@@H]([C@H](C[C@H](O3)C)N(C)C)O)(C)O)C)C)C)O)(C)O
+etidronic acid	DB01077	CC(O)(P(=O)(O)O)P(=O)(O)O
+cyclopentolate	DB00979	CN(C)CCOC(=O)C(C1=CC=CC=C1)C2(CCCC2)O
+lamotrigine	DB00555	C1=CC(=C(C(=C1)Cl)Cl)C2=C(N=C(N=N2)N)N
+balsalazide	DB01014	C1=CC(=CC=C1C(=O)NCCC(=O)O)N=NC2=CC(=C(C=C2)O)C(=O)O
+metformin	DB00331	CN(C)C(=N)N=C(N)N
+bicalutamide	DB01128	CC(CS(=O)(=O)C1=CC=C(C=C1)F)(C(=O)NC2=CC(=C(C=C2)C#N)C(F)(F)F)O
+moclobemide	DB01171	C1COCCN1CCNC(=O)C2=CC=C(C=C2)Cl
+salbutamol	DB01001	CC(C)(C)NCC(C1=CC(=C(C=C1)O)CO)O
+clotrimazole	DB00257	C1=CC=C(C=C1)C(C2=CC=CC=C2)(C3=CC=CC=C3Cl)N4C=CN=C4
+raloxifene	DB00481	C1CCN(CC1)CCOC2=CC=C(C=C2)C(=O)C3=C(SC4=C3C=CC(=C4)O)C5=CC=C(C=C5)O
+zoledronic acid	DB00399	C1=CN(C=N1)CC(O)(P(=O)(O)O)P(=O)(O)O
+chondroitin sulfate	DB09301	CC(=O)N[C@@H]1[C@H]([C@H]([C@H](O[C@H]1O)OS(=O)(=O)O)O)O[C@H]2[C@@H]([C@H]([C@@H]([C@H](O2)C(=O)O)O)O)O
+nystatin	DB00646	C[C@H]1/C=C/C=C/CC/C=C/C=C/C=C/C=C/C(CC2C(C(C[C@](O2)(CC(C(CCC(CC(CC(CC(=O)O[C@H]([C@@H]([C@@H]1O)C)C)O)O)O)O)O)O)O)C(=O)O)O[C@@H]3[C@H]([C@H]([C@@H]([C@H](O3)C)O)N)O
+pantoprazole	DB00213	COC1=C(C(=NC=C1)CS(=O)C2=NC3=C(N2)C=C(C=C3)OC(F)F)OC
+capecitabine	DB01101	CCCCCOC(=O)NC1=NC(=O)N(C=C1F)[C@H]2[C@@H]([C@@H]([C@H](O2)C)O)O
+xylometazoline	DB06694	CC1=CC(=CC(=C1CC2=NCCN2)C)C(C)(C)C
+loratadine	DB00455	CCOC(=O)N1CCC(=C2C3=C(CCC4=C2N=CC=C4)C=C(C=C3)Cl)CC1
+atenolol	DB00335	CC(C)NCC(COC1=CC=C(C=C1)CC(=O)N)O
+vardenafil	DB00862	CCCC1=NC(=C2N1N=C(NC2=O)C3=C(C=CC(=C3)S(=O)(=O)N4CCN(CC4)CC)OCC)C
+timolol	DB00373	CC(C)(C)NC[C@@H](COC1=NSN=C1N2CCOCC2)O
+eplerenone	DB00700	C[C@]12CCC(=O)C=C1C[C@H]([C@@H]3[C@]24[C@H](O4)C[C@]5([C@H]3CC[C@@]56CCC(=O)O6)C)C(=O)OC
+mizolastine	DB12523	CN(C1CCN(CC1)C2=NC3=CC=CC=C3N2CC4=CC=C(C=C4)F)C5=NC=CC(=O)N5
+eprosartan	DB00876	CCCCC1=NC=C(N1CC2=CC=C(C=C2)C(=O)O)/C=C(\CC3=CC=CS3)/C(=O)O
+propylthiouracil	DB00550	CCCC1=CC(=O)NC(=S)N1
+clarithromycin	DB01211	CC[C@@H]1[C@@]([C@@H]([C@H](C(=O)[C@@H](C[C@@]([C@@H]([C@H]([C@@H]([C@H](C(=O)O1)C)O[C@H]2C[C@@]([C@H]([C@@H](O2)C)O)(C)OC)C)O[C@H]3[C@@H]([C@H](C[C@H](O3)C)N(C)C)O)(C)OC)C)C)O)(C)O
+finasteride	DB01216	C[C@]12CC[C@H]3[C@H]([C@@H]1CC[C@@H]2C(=O)NC(C)(C)C)CC[C@@H]4[C@@]3(C=CC(=O)N4)C
+trimipramine	DB00726	CC(CN1C2=CC=CC=C2CCC3=CC=CC=C31)CN(C)C
+fludrocortisone	DB00687	C[C@]12CCC(=O)C=C1CC[C@@H]3[C@@]2([C@H](C[C@]4([C@H]3CC[C@@]4(C(=O)CO)O)C)O)F
+ephedrine	DB01364	C[C@@H]([C@@H](C1=CC=CC=C1)O)NC
+tranexamic acid	DB00302	C1CC(CCC1CN)C(=O)O
+alimemazine	DB01246	CC(CN1C2=CC=CC=C2SC3=CC=CC=C31)CN(C)C
+picosulfuric acid	DB09268	C1=CC=NC(=C1)C(C2=CC=C(C=C2)OS(=O)(=O)O)C3=CC=C(C=C3)OS(=O)(=O)O
+rizatriptan	DB00953	CN(C)CCC1=CNC2=C1C=C(C=C2)CN3C=NC=N3
+ciprofloxacin	DB00537	C1CC1N2C=C(C(=O)C3=CC(=C(C=C32)N4CCNCC4)F)C(=O)O
+zafirlukast	DB00549	CC1=CC=CC=C1S(=O)(=O)NC(=O)C2=CC(=C(C=C2)CC3=CN(C4=C3C=C(C=C4)NC(=O)OC5CCCC5)C)OC
+levocetirizine	DB06282	C1CN(CCN1CCOCC(=O)O)[C@H](C2=CC=CC=C2)C3=CC=C(C=C3)Cl
+metoprolol	DB00264	CC(C)NCC(COC1=CC=C(C=C1)CCOC)O
+sevelamer	DB00658	C=CCN.C1C(O1)CCl
+ketotifen	DB00920	CN1CCC(=C2C3=C(C(=O)CC4=CC=CC=C42)SC=C3)CC1
+acetazolamide	DB00819	CC(=O)NC1=NN=C(S1)S(=O)(=O)N
+fluocinonide	DB01047	CC(=O)OCC(=O)[C@@]12[C@@H](C[C@@H]3[C@@]1(C[C@@H]([C@]4([C@H]3C[C@@H](C5=CC(=O)C=C[C@@]54C)F)F)O)C)OC(O2)(C)C
+indomethacin	DB00328	CC1=C(C2=C(N1C(=O)C3=CC=C(C=C3)Cl)C=CC(=C2)OC)CC(=O)O
+dosulepin	DB09167	CN(C)CC/C=C\1/C2=CC=CC=C2CSC3=CC=CC=C31
+pyridostigmine	DB00545	C[N+]1=CC=CC(=C1)OC(=O)N(C)C
+dihydrocodeine	DB01551	CN1CC[C@]23[C@@H]4[C@H]1CC5=C2C(=C(C=C5)OC)O[C@H]3[C@H](CC4)O
+chlorpromazine	DB00477	CN(C)CCCN1C2=CC=CC=C2SC3=C1C=C(C=C3)Cl
+fosinopril	DB00492	CCC(=O)OC(C(C)C)OP(=O)(CCCCC1=CC=CC=C1)CC(=O)N2C[C@@H](C[C@H]2C(=O)O)C3CCCCC3
+light magnesium oxide	DB01377	O=[Mg]
+isosorbide mononitrate	DB01020	C1[C@@H]([C@@H]2[C@H](O1)[C@@H](CO2)O[N+](=O)[O-])O
+cephalexin	DB00567	CC1=C(N2[C@@H]([C@@H](C2=O)NC(=O)[C@@H](C3=CC=CC=C3)N)SC1)C(=O)O
+flunisolide	DB00180	C[C@]12C[C@@H]([C@H]3[C@H]([C@@H]1C[C@@H]4[C@]2(OC(O4)(C)C)C(=O)CO)C[C@@H](C5=CC(=O)C=C[C@]35C)F)O
+tryptophan	DB00150	C1=CC=C2C(=C1)C(=CN2)C[C@@H](C(=O)O)N
+doxazosin	DB00590	COC1=C(C=C2C(=C1)C(=NC(=N2)N3CCN(CC3)C(=O)C4COC5=CC=CC=C5O4)N)OC
+flavoxate	DB01148	CC1=C(OC2=C(C1=O)C=CC=C2C(=O)OCCN3CCCCC3)C4=CC=CC=C4
+valaciclovir	DB00577	CC(C)[C@@H](C(=O)OCCOCN1C=NC2=C1N=C(NC2=O)N)N
+diazepam	DB00829	CN1C(=O)CN=C(C2=C1C=CC(=C2)Cl)C3=CC=CC=C3
+benserazide	DB12783	C1=CC(=C(C(=C1CNNC(=O)C(CO)N)O)O)O
+diethylstilbestrol	DB00255	CC/C(=C(/CC)\C1=CC=C(C=C1)O)/C2=CC=C(C=C2)O
+dorzolamide	DB00869	CCN[C@H]1C[C@@H](S(=O)(=O)C2=C1C=C(S2)S(=O)(=O)N)C
+carboxymethylcellulose	DB11059	CC(=O)O.C(C(C(C(C(C=O)O)O)O)O)O
+celecoxib	DB00482	CC1=CC=C(C=C1)C2=CC(=NN2C3=CC=C(C=C3)S(=O)(=O)N)C(F)(F)F
+betaxolol	DB00195	CC(C)NCC(COC1=CC=C(C=C1)CCOCC2CC2)O
+cortisone acetate	DB01380	CC(=O)OCC(=O)[C@]1(CC[C@@H]2[C@@]1(CC(=O)[C@H]3[C@H]2CCC4=CC(=O)CC[C@]34C)C)O
+clopidogrel	DB00758	COC(=O)[C@H](C1=CC=CC=C1Cl)N2CCC3=C(C2)C=CS3
+rimiterol hydrobromide	DB13559	C1CCN[C@H](C1)[C@H](C2=CC(=C(C=C2)O)O)O.Br
+olopatadine	DB00768	CN(C)CC/C=C\1/C2=CC=CC=C2COC3=C1C=C(C=C3)CC(=O)O
+metolazone	DB00524	CC1NC2=CC(=C(C=C2C(=O)N1C3=CC=CC=C3C)S(=O)(=O)N)Cl
+pipotiazine	DB01621	CN(C)S(=O)(=O)C1=CC2=C(C=C1)SC3=CC=CC=C3N2CCCN4CCC(CC4)CCO
+alginic acid	DB13518	COC1C(C(C(OC1C(=O)O)OC2C(C(C(OC2C(=O)O)OC)O)O)O)O
+quetiapine	DB01224	C1CN(CCN1CCOCCO)C2=NC3=CC=CC=C3SC4=CC=CC=C42
+clavulanate	DB00766	C1[C@@H]2N(C1=O)[C@H](/C(=C/CO)/O2)C(=O)O
+alendronic acid	DB00630	C(CC(O)(P(=O)(O)O)P(=O)(O)O)CN
+buclizine	DB00354	CC(C)(C)C1=CC=C(C=C1)CN2CCN(CC2)C(C3=CC=CC=C3)C4=CC=C(C=C4)Cl
+mercaptopurine	DB01033	C1=NC2=C(N1)C(=S)N=CN2
+calcium acetate	DB00258	CC(=O)[O-].CC(=O)[O-].[Ca+2]
+acarbose	DB00284	C[C@@H]1[C@H]([C@@H]([C@H]([C@H](O1)O[C@@H]2[C@H](O[C@@H]([C@@H]([C@H]2O)O)O[C@@H]3[C@H](OC([C@@H]([C@H]3O)O)O)CO)CO)O)O)N[C@H]4C=C([C@H]([C@@H]([C@H]4O)O)O)CO
+indapamide	DB00808	CC1CC2=CC=CC=C2N1NC(=O)C3=CC(=C(C=C3)Cl)S(=O)(=O)N
+sotalol	DB00489	CC(C)NCC(C1=CC=C(C=C1)NS(=O)(=O)C)O
+pizotifen	DB06153	CN1CCC(=C2C3=C(CCC4=CC=CC=C42)SC=C3)CC1
+cetirizine	DB00341	C1CN(CCN1CCOCC(=O)O)C(C2=CC=CC=C2)C3=CC=C(C=C3)Cl
+ranitidine	DB00863	CN/C(=C\[N+](=O)[O-])/NCCSCC1=CC=C(O1)CN(C)C
+trifluoperazine	DB00831	CN1CCN(CC1)CCCN2C3=CC=CC=C3SC4=C2C=C(C=C4)C(F)(F)F
+mycophenolate mofetil	DB00688	CC1=C2COC(=O)C2=C(C(=C1OC)C/C=C(\C)/CCC(=O)OCCN3CCOCC3)O
+codeine	DB11321	CN1CC[C@]23[C@@H]4[C@H]1CC5=C2C(=C(C=C5)OC)O[C@H]3[C@H](C=C4)O
+pravastatin	DB00175	CC[C@H](C)C(=O)O[C@H]1C[C@@H](C=C2[C@H]1[C@H]([C@H](C=C2)C)CC[C@H](C[C@H](CC(=O)O)O)O)O
+paroxetine	DB00715	C1CNC[C@H]([C@@H]1C2=CC=C(C=C2)F)COC3=CC4=C(C=C3)OCO4
+metoclopramide	DB01233	CCN(CC)CCNC(=O)C1=CC(=C(C=C1OC)N)Cl
+salmeterol	DB00938	C1=CC=C(C=C1)CCCCOCCCCCCNCC(C2=CC(=C(C=C2)O)CO)O
+alprazolam	DB00404	CC1=NN=C2N1C3=C(C=C(C=C3)Cl)C(=NC2)C4=CC=CC=C4
+entacapone	DB00494	CCN(CC)C(=O)/C(=C/C1=CC(=C(C(=C1)O)O)[N+](=O)[O-])/C#N
+metronidazole	DB00916	CC1=NC=C(N1CCO)[N+](=O)[O-]
+vitamin d	DB11094	C[C@H](CCCC(C)C)[C@H]1CC[C@@H]\2[C@@]1(CCC/C2=C\C=C/3\C[C@H](CCC3=C)O)C
+fluorometholone	DB00324	C[C@H]1C[C@H]2[C@@H]3CC[C@@]([C@]3(C[C@@H]([C@@]2([C@@]4(C1=CC(=O)C=C4)C)F)O)C)(C(=O)C)O
+doxycycline	DB00254	C[C@@H]1[C@H]2[C@@H]([C@H]3[C@@H](C(=O)C(=C([C@]3(C(=O)C2=C(C4=C1C=CC=C4O)O)O)O)C(=O)N)N(C)C)O
+leflunomide	DB01097	CC1=C(C=NO1)C(=O)NC2=CC=C(C=C2)C(F)(F)F
+ezetimibe	DB00973	C1=CC(=CC=C1[C@@H]2[C@H](C(=O)N2C3=CC=C(C=C3)F)CC[C@@H](C4=CC=C(C=C4)F)O)O
+haloperidol	DB00502	C1CN(CCC1(C2=CC=C(C=C2)Cl)O)CCCC(=O)C3=CC=C(C=C3)F
+clonazepam	DB01068	C1C(=O)NC2=C(C=C(C=C2)[N+](=O)[O-])C(=N1)C3=CC=CC=C3Cl
+amitriptyline	DB00321	CN(C)CCC=C1C2=CC=CC=C2CCC3=CC=CC=C31
+minoxidil	DB00350	C1CCN(CC1)C2=NC(=N)N(C(=C2)N)O
+prednisone	DB00635	C[C@]12CC(=O)[C@H]3[C@H]([C@@H]1CC[C@@]2(C(=O)CO)O)CCC4=CC(=O)C=C[C@]34C
+losartan	DB00678	CCCCC1=NC(=C(N1CC2=CC=C(C=C2)C3=CC=CC=C3C4=NNN=N4)CO)Cl
+atazanavir	DB01072	CC(C)(C)[C@@H](C(=O)N[C@@H](CC1=CC=CC=C1)[C@H](CN(CC2=CC=C(C=C2)C3=CC=CC=N3)NC(=O)[C@H](C(C)(C)C)NC(=O)OC)O)NC(=O)OC
+tacrolimus	DB00864	C[C@@H]1C[C@@H]([C@@H]2[C@H](C[C@H]([C@@](O2)(C(=O)C(=O)N3CCCC[C@H]3C(=O)O[C@@H]([C@@H]([C@H](CC(=O)[C@@H](/C=C(/C1)\C)CC=C)O)C)/C(=C/[C@@H]4CC[C@H]([C@@H](C4)OC)O)/C)O)C)OC)OC
+phenindione	DB00498	C1=CC=C(C=C1)C2C(=O)C3=CC=CC=C3C2=O
+tamsulosin	DB00706	CCOC1=CC=CC=C1OCCN[C@H](C)CC2=CC(=C(C=C2)OC)S(=O)(=O)N
+dextropropoxyphene	DB00647	CCC(=O)O[C@](CC1=CC=CC=C1)(C2=CC=CC=C2)[C@H](C)CN(C)C
+flumethasone	DB00663	C[C@@H]1C[C@H]2[C@@H]3C[C@@H](C4=CC(=O)C=C[C@@]4([C@]3([C@H](C[C@@]2([C@]1(C(=O)CO)O)C)O)F)C)F
+imipramine	DB00458	CN(C)CCCN1C2=CC=CC=C2CCC3=CC=CC=C31
+spironolactone	DB00421	CC(=O)S[C@@H]1CC2=CC(=O)CC[C@@]2([C@@H]3[C@@H]1[C@@H]4CC[C@]5([C@]4(CC3)C)CCC(=O)O5)C
+testosterone	DB00624	C[C@]12CC[C@H]3[C@H]([C@@H]1CC[C@@H]2O)CCC4=CC(=O)CC[C@]34C
+verapamil	DB00661	CC(C)C(CCCN(C)CCC1=CC(=C(C=C1)OC)OC)(C#N)C2=CC(=C(C=C2)OC)OC
+pethidine	DB00454	CCOC(=O)C1(CCN(CC1)C)C2=CC=CC=C2
+furosemide	DB00695	C1=COC(=C1)CNC2=CC(=C(C=C2C(=O)O)S(=O)(=O)N)Cl
+levodopa	DB01235	C1=CC(=C(C=C1C[C@@H](C(=O)O)N)O)O
+triptorelin	DB06825	CC(C)C[C@@H](C(=O)N[C@@H](CCCN=C(N)N)C(=O)N1CCC[C@H]1C(=O)NCC(=O)N)NC(=O)[C@@H](CC2=CNC3=CC=CC=C32)NC(=O)[C@H](CC4=CC=C(C=C4)O)NC(=O)[C@H](CO)NC(=O)[C@H](CC5=CNC6=CC=CC=C65)NC(=O)[C@H](CC7=CN=CN7)NC(=O)[C@@H]8CCC(=O)N8
+cholecalciferol	DB00169	C[C@H](CCCC(C)C)[C@H]1CC[C@@H]\2[C@@]1(CCC/C2=C\C=C/3\C[C@H](CCC3=C)O)C
+ferrous sulfate	DB13257	[O-]S(=O)(=O)[O-].[Fe+2]
+calcium carbonate	DB06724	C(=O)([O-])[O-].[Ca+2]
+sulfasalazine	DB00795	C1=CC=NC(=C1)NS(=O)(=O)C2=CC=C(C=C2)N=NC3=CC(=C(C=C3)O)C(=O)O
+flupentixol	DB00875	C1CN(CCN1CC/C=C\2/C3=CC=CC=C3SC4=C2C=C(C=C4)C(F)(F)F)CCO
+isosorbide dinitrate	DB00883	C1[C@H]([C@@H]2[C@H](O1)[C@H](CO2)O[N+](=O)[O-])O[N+](=O)[O-]
+colistimethate	DB01111	CCC(C)CCCCC(=O)NC(CCNCS(=O)(=O)[O-])C(=O)NC(C(C)O)C(=O)NC(CCNCS(=O)(=O)[O-])C(=O)NC1CCNC(=O)C(NC(=O)C(NC(=O)C(NC(=O)C(NC(=O)C(NC(=O)C(NC1=O)CCNCS(=O)(=O)[O-])CC(C)C)CC(C)C)CCNCS(=O)(=O)[O-])CCNCS(=O)(=O)[O-])C(C)O
+triprolidine	DB00427	CC1=CC=C(C=C1)/C(=C\CN2CCCC2)/C3=CC=CC=N3
+esomeprazole	DB00736	CC1=CN=C(C(=C1OC)C)C[S@](=O)C2=NC3=C(N2)C=C(C=C3)OC
+sodium aurothiomalate	DB09276	C(C(C(=O)[O-])[S-])C(=O)[O-].[Na+].[Na+].[Au+]
+amlodipine	DB00381	CCOC(=O)C1=C(NC(=C(C1C2=CC=CC=C2Cl)C(=O)OC)C)COCCN
+trandolapril	DB00519	CCOC(=O)[C@H](CCC1=CC=CC=C1)N[C@@H](C)C(=O)N2[C@H]3CCCC[C@@H]3C[C@H]2C(=O)O
+clobetasol propionate	DB01013	CCC(=O)O[C@@]1([C@H](C[C@@H]2[C@@]1(C[C@@H]([C@]3([C@H]2CCC4=CC(=O)C=C[C@@]43C)F)O)C)C)C(=O)CCl
+bendroflumethiazide	DB00436	C1=CC=C(C=C1)CC2NC3=C(C=C(C(=C3)C(F)(F)F)S(=O)(=O)N)S(=O)(=O)N2
+nifedipine	DB01115	CC1=C(C(C(=C(N1)C)C(=O)OC)C2=CC=CC=C2[N+](=O)[O-])C(=O)OC
+chlordiazepoxide	DB00475	CN=C1CN(C(=C2C=C(C=CC2=N1)Cl)C3=CC=CC=C3)O
+galantamine	DB00674	CN1CC[C@@]23C=C[C@@H](C[C@@H]2OC4=C(C=CC(=C34)C1)OC)O
+antazoline	DB08799	C1CN=C(N1)CN(CC2=CC=CC=C2)C3=CC=CC=C3
+propiverine	DB12278	CCCOC(C1=CC=CC=C1)(C2=CC=CC=C2)C(=O)OC3CCN(CC3)C
+pholcodine	DB09209	CN1CC[C@]23[C@@H]4[C@H]1CC5=C2C(=C(C=C5)OCCN6CCOCC6)O[C@H]3[C@H](C=C4)O
+digitoxin	DB01396	C[C@@H]1[C@H]([C@H](C[C@@H](O1)O[C@@H]2[C@H](O[C@H](C[C@@H]2O)O[C@@H]3[C@H](O[C@H](C[C@@H]3O)O[C@H]4CC[C@]5([C@@H](C4)CC[C@@H]6[C@@H]5CC[C@]7([C@@]6(CC[C@@H]7C8=CC(=O)OC8)O)C)C)C)C)O)O
+famotidine	DB00927	C1=C(N=C(S1)N=C(N)N)CSCCC(=NS(=O)(=O)N)N
+acitretin	DB00459	CC1=CC(=C(C(=C1/C=C/C(=C/C=C/C(=C/C(=O)O)/C)/C)C)C)OC
+fluphenazine	DB00623	C1CN(CCN1CCCN2C3=CC=CC=C3SC4=C2C=C(C=C4)C(F)(F)F)CCO
+sulfinpyrazone	DB01138	C1=CC=C(C=C1)N2C(=O)C(C(=O)N2C3=CC=CC=C3)CCS(=O)C4=CC=CC=C4
+bezafibrate	DB01393	CC(C)(C(=O)O)OC1=CC=C(C=C1)CCNC(=O)C2=CC=C(C=C2)Cl
+liothyronine	DB00279	C1=CC(=C(C=C1OC2=C(C=C(C=C2I)C[C@@H](C(=O)O)N)I)I)O
+beclomethasone dipropionate	DB00394	CCC(=O)OCC(=O)[C@]1([C@H](C[C@@H]2[C@@]1(C[C@@H]([C@]3([C@H]2CCC4=CC(=O)C=C[C@@]43C)Cl)O)C)C)OC(=O)CC
+carteolol	DB00521	CC(C)(C)NCC(COC1=CC=CC2=C1CCC(=O)N2)O
+tizanidine	DB00697	C1CN=C(N1)NC2=C(C=CC3=NSN=C32)Cl
+quinapril	DB00881	CCOC(=O)[C@H](CCC1=CC=CC=C1)N[C@@H](C)C(=O)N2CC3=CC=CC=C3C[C@H]2C(=O)O
+hydroxocobalamin	DB00200	CC1=CC2=C(C=C1C)N(C=N2)[C@@H]3[C@@H]([C@@H]([C@H](O3)CO)OP(=O)([O-])O[C@H](C)CNC(=O)CC[C@@]\4([C@H]([C@@H]5[C@]6([C@@]([C@@H](C(=N6)/C(=C\7/[C@@]([C@@H](C(=N7)/C=C\8/C([C@@H](C(=N8)/C(=C4\[N-]5)/C)CCC(=O)N)(C)C)CCC(=O)N)(C)CC(=O)N)/C)CCC(=O)N)(C)CC(=O)N)C)CC(=O)N)C)O.O.[Co+2]
+simvastatin	DB00641	CCC(C)(C)C(=O)O[C@H]1C[C@H](C=C2[C@H]1[C@H]([C@H](C=C2)C)CC[C@@H]3C[C@H](CC(=O)O3)O)C
+calcium phosphate	DB11348	[O-]P(=O)([O-])[O-].[O-]P(=O)([O-])[O-].[Ca+2].[Ca+2].[Ca+2]
+dutasteride	DB01126	C[C@]12CC[C@H]3[C@H]([C@@H]1CC[C@@H]2C(=O)NC4=C(C=CC(=C4)C(F)(F)F)C(F)(F)F)CC[C@@H]5[C@@]3(C=CC(=O)N5)C
+scopolamine	DB00747	CN1[C@@H]2CC(C[C@H]1[C@H]3[C@@H]2O3)OC(=O)[C@H](CO)C4=CC=CC=C4
+sucralfate	DB00364	C([C@@H]1[C@H]([C@@H]([C@H]([C@H](O1)O[C@]2([C@H]([C@@H]([C@H](O2)COS(=O)(=O)O[Al])OS(=O)(=O)O[Al])OS(=O)(=O)O[Al])COS(=O)(=O)O[Al])OS(=O)(=O)O[Al])OS(=O)(=O)O[Al])OS(=O)(=O)O[Al])OS(=O)(=O)O[Al].O.O.O.O.O.O.O.O.O.O.O.O.O.O.O.O.O.O.O.O.[Al]
+fluvastatin	DB01095	CC(C)N1C2=CC=CC=C2C(=C1/C=C/[C@@H](C[C@@H](CC(=O)O)O)O)C3=CC=C(C=C3)F

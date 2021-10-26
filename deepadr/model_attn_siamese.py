@@ -187,6 +187,8 @@ class DeepAdr_Transformer(nn.Module):
             X: tensor, (batch, deepadr similarity type vector, input_size)
         """
 
+#         print("X shape:", X.shape)
+        
         z = self.trfunit_pipeline(X)
         
         # pool across similarity type vectors

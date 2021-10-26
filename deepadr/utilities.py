@@ -208,8 +208,8 @@ def get_cuda_device_stats(device):
     print('total memory available:', torch.cuda.get_device_properties(device).total_memory/(1024**3), 'GB')
     print('total memory allocated on device:', torch.cuda.memory_allocated(device)/(1024**3), 'GB')
     print('max memory allocated on device:', torch.cuda.max_memory_allocated(device)/(1024**3), 'GB')
-    print('total memory cached on device:', torch.cuda.memory_cached(device)/(1024**3), 'GB')
-    print('max memory cached  on device:', torch.cuda.max_memory_cached(device)/(1024**3), 'GB')
+    print('total memory cached on device:', torch.cuda.memory_reserved(device)/(1024**3), 'GB')
+    print('max memory cached  on device:', torch.cuda.max_memory_reserved(device)/(1024**3), 'GB')
 
 def get_interaction_stat(matrix):
     w, h = matrix.shape
@@ -222,7 +222,7 @@ def get_interaction_stat(matrix):
     print('number of zero elements', zero_elem)
     print('diagnoal elements ', np.diag(matrix))
 
-def perfmetric_report(pred_target, ref_target, probscore, epoch, outlog):
+def perfmetric_report(pred_target, ref_target, probscore, epoch, outlog, multi_class='raise'):
     lsep = "\n"
     report = "Epoch: {}".format(epoch) + lsep
     report += "Classification report on all events:" + lsep
@@ -237,7 +237,11 @@ def perfmetric_report(pred_target, ref_target, probscore, epoch, outlog):
     accuracy = accuracy_score(ref_target, pred_target)
     report += str(accuracy) + lsep
         
-    s_auc = roc_auc_score(ref_target, probscore)
+    if (multi_class != "raise"):
+
+        s_auc = roc_auc_score(ref_target, probscore, multi_class=multi_class)
+    else:
+        s_auc = roc_auc_score(ref_target, probscore)
     report += "AUC:\n" + str(s_auc) + lsep
     precision_scores, recall_scores, __ = precision_recall_curve(ref_target, probscore)
     s_aupr = auc(recall_scores, precision_scores)

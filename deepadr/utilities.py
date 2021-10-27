@@ -24,6 +24,23 @@ class ModelScore:
         desc = " best_epoch_indx:{}\n auc:{} \n apur:{} \n f1:{} \n precision:{} \n recall:{} \n" \
                "".format(self.best_epoch_indx, self.s_auc, self.s_aupr, self.s_f1, self.s_precision, self.s_recall)
         return desc
+    
+class ModelScoreMultiClass:
+    def __init__(self, best_epoch_indx, s_auc, s_f1_micro, s_f1_macro, s_precision_micro, s_precision_macro, s_recall_micro, s_recall_macro):
+        self.best_epoch_indx = best_epoch_indx
+        self.s_auc = s_auc
+        self.s_f1_micro = s_f1_micro
+        self.s_precision_micro = s_precision_micro
+        self.s_recall_micro = s_recall_micro
+        self.s_f1_macro = s_f1_macro
+        self.s_precision_macro = s_precision_macro
+        self.s_recall_macro = s_recall_macro
+
+
+    def __repr__(self):
+        desc = " best_epoch_indx:{}\n auc:{} \n f1_micro:{} \n f1_macro:{} \n precision_micro:{} \n precision_macro:{} \n recall_micro:{} \n recall_macro:{} \n" \
+               "".format(self.best_epoch_indx, self.s_auc, self.s_f1_micro, self.s_f1_macro, self.s_precision_micro, self.s_precision_macro, self.s_recall_micro, self.s_recall_macro)
+        return desc
 
 def get_performance_results(similarity_type, target_dir, num_folds, dsettype):
     all_perf = {}
@@ -238,21 +255,32 @@ def perfmetric_report(pred_target, ref_target, probscore, epoch, outlog, multi_c
     report += str(accuracy) + lsep
         
     if (multi_class != "raise"):
-
         s_auc = roc_auc_score(ref_target, probscore, multi_class=multi_class)
+        
+        s_recall_micro = recall_score(ref_target, pred_target, average='micro')
+        s_recall_macro = recall_score(ref_target, pred_target, average='macro')
+        
+        s_precision_micro = precision_score(ref_target, pred_target, average='micro')
+        s_precision_macro = precision_score(ref_target, pred_target, average='macro')
+        
+        modelscore = ModelScoreMultiClass(epoch, s_auc, micro_f1, macro_f1, s_precision_micro, s_precision_macro, s_recall_micro, s_recall_macro)
+        
     else:
         s_auc = roc_auc_score(ref_target, probscore)
+#         report += "AUC:\n" + str(s_auc) + lsep
+        precision_scores, recall_scores, __ = precision_recall_curve(ref_target, probscore)
+        s_aupr = auc(recall_scores, precision_scores)
+        report += "AUPR:\n" + str(s_aupr) + lsep
+        s_f1 = f1_score(ref_target, pred_target)
+        report += "binary f1:\n" + str(s_f1) + lsep
+        s_recall = recall_score(ref_target, pred_target)
+        s_precision = precision_score(ref_target, pred_target)
+        
+        modelscore = ModelScore(epoch, s_auc, s_aupr, s_f1, s_precision, s_recall)
+    
     report += "AUC:\n" + str(s_auc) + lsep
-    precision_scores, recall_scores, __ = precision_recall_curve(ref_target, probscore)
-    s_aupr = auc(recall_scores, precision_scores)
-    report += "AUPR:\n" + str(s_aupr) + lsep
-    s_f1 = f1_score(ref_target, pred_target)
-    report += "binary f1:\n" + str(s_f1) + lsep
-    s_recall = recall_score(ref_target, pred_target)
-    s_precision = precision_score(ref_target, pred_target)
     report += "-"*30 + lsep
 
-    modelscore = ModelScore(epoch, s_auc, s_aupr, s_f1, s_precision, s_recall)
     ReaderWriter.write_log(report, outlog)
     return modelscore
 

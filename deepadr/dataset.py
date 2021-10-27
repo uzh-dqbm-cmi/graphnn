@@ -557,12 +557,12 @@ def construct_load_dataloaders(dataset_fold, dsettypes, config, wrk_dir):
 
     return (data_loaders, epoch_loss_avgbatch, score_dict, class_weights, flog_out)
 
-def ddi_dataframe_to_unique_drugs(df):
+def ddi_dataframe_to_unique_drugs(df, columns=['Drug_ID', 'Drug']):
     # columns: ['Drug1_ID', 'Drug1', 'Drug2_ID', 'Drug2', 'Y']
     drug1 = pd.Series(df.Drug1.values,index=df.Drug1_ID).to_dict()
     drug2 = pd.Series(df.Drug2.values,index=df.Drug2_ID).to_dict()
     uniqe_drugs = {**drug1, **drug2}
-    return pd.DataFrame(uniqe_drugs.items(), columns=['Drug_ID', 'Drug'])
+    return pd.DataFrame(uniqe_drugs.items(), columns=columns)
 
 
 def preprocess_features(feat_fpath, dsetname, fill_diag = None):
@@ -803,3 +803,17 @@ def read_pickles(data_dir, device):
     deepadr_datatensor = ReaderWriter.read_tensor(os.path.join(data_dir, 'deepadr_datatensor.torch'), device)
 
     return data_partitions, deepadr_datatensor
+
+dict_ddiTypes = {
+    29: "#Drug1 may decrease the diuretic activities of #Drug2",
+    6: "#Drug1 may increase the anticoagulant activities of #Drug2",
+    37: "#Drug1 may decrease the antihypertensive activities of #Drug2",
+    32: "#Drug1 may increase the sedative activities of #Drug2",
+    83: "#Drug1 may increase the hypokalemic activities of #Drug2",
+    9: "#Drug1 may increase the hypoglycemic activities of #Drug2",
+    20: "#Drug1 may increase the QTc-prolonging activities of #Drug2",
+    10: "#Drug1 may increase the antihypertensive activities of #Drug2",
+    57: "#Drug1 may increase the nephrotoxic activities of #Drug2",
+    60: "#Drug1 may increase the hypotensive activities of #Drug2",
+    27: "#Drug1 may increase the neuroexcitatory activities of #Drug2"
+}

@@ -106,6 +106,7 @@ class DeepAdr_SiameseTrf(nn.Module):
         
         self.do_softmax = do_softmax
         self.num_classes = num_classes
+        self.exp3 = expression_dim // 3
         
         if dist == 'euclidean':
             self.dist = nn.PairwiseDistance(p=2, keepdim=True)
@@ -120,7 +121,8 @@ class DeepAdr_SiameseTrf(nn.Module):
         self.Wy = nn.Linear(2*input_dim+1, num_classes)
         
         self.Wy_ze = nn.Linear(2*input_dim+1+expression_dim, expression_dim)
-        self.Wy2 = nn.Linear(expression_dim, num_classes)
+        self.Wy2 = nn.Linear(expression_dim, self.exp3)
+        self.Wy3 = nn.Linear(self.exp3, num_classes)
         
         self.drop = nn.Dropout(drop)
         # perform log softmax on the feature dimension
@@ -150,6 +152,8 @@ class DeepAdr_SiameseTrf(nn.Module):
             y = self.Wy_ze(out)
             y = self.drop(y)
             y = self.Wy2(y)
+            y = self.drop(y)
+            y = self.Wy3(y)
         else:
             out = torch.cat([Z_a, Z_b, dist], axis=-1)
             y = self.Wy(out)

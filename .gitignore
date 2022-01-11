@@ -1,4 +1,6 @@
 data/processed/**
+data/drugcomb/**
+data/synergxdb/**
 *.p
 *.pickle
 *.pkl

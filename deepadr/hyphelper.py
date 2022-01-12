@@ -7,7 +7,7 @@ import seaborn as sns
 # import ogb
 from tqdm import tqdm
 # import hiplot as hip
-# from copy import deepcopy
+from copy import deepcopy
 
 import torch
 from torch_geometric.data import Data

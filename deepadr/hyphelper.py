@@ -1,3 +1,14 @@
+import os
+import sys
+import numpy as np
+import pandas as pd
+import datetime
+import seaborn as sns
+# import ogb
+from tqdm import tqdm
+# import hiplot as hip
+# from copy import deepcopy
+
 import torch
 from torch_geometric.data import Data
 from torch_geometric.loader import DataLoader
@@ -20,27 +31,36 @@ import json
 
 fdtype = torch.float32
 
+def generate_tp_hp(tp, hp, hp_names):
+    tphp=deepcopy(tp)
+    for i,n in enumerate(hp_names):
+#         print(n)
+#         print(hp[i])
+        tphp[n] = hp[i]
+    return tphp
 
-def run_exp(tp, device_gpu, exp_dir, partition, used_dataset): #
+
+def run_exp(queue, used_dataset, gpu_num, tp, exp_dir, partition): #
     
     targetdata_dir_raw = os.path.abspath(exp_dir + "/../../raw")
     
-    print("gpu: ", device_gpu)
+    device_gpu = get_device(True, index=gpu_num)
+    print("gpu:", device_gpu)
     
     # Serialize data into file:
     json.dump( tp, open( exp_dir + "/hyperparameters.json", 'w' ) )
     
     tp['nonlin_func'] = nn.ReLU()
     
-#     train_dataset = Subset(used_dataset, partition['train'])
-#     val_dataset = Subset(used_dataset, partition['validation'])
-#     test_dataset = Subset(used_dataset, partition['test'])
+    train_dataset = Subset(used_dataset, partition['train'])
+    val_dataset = Subset(used_dataset, partition['validation'])
+    test_dataset = Subset(used_dataset, partition['test'])
     
-#     train_loader = DataLoader(train_dataset, batch_size=tp["batch_size"], shuffle=True, follow_batch=['x_a', 'x_b'])
-#     valid_loader = DataLoader(val_dataset, batch_size=tp["batch_size"], shuffle=False, follow_batch=['x_a', 'x_b'])
-#     test_loader = DataLoader(test_dataset, batch_size=tp["batch_size"], shuffle=False, follow_batch=['x_a', 'x_b'])
-
-# #     train_loader, valid_loader, test_loader = loaders
+    train_loader = DataLoader(train_dataset, batch_size=tp["batch_size"], shuffle=True, follow_batch=['x_a', 'x_b'])
+    valid_loader = DataLoader(val_dataset, batch_size=tp["batch_size"], shuffle=False, follow_batch=['x_a', 'x_b'])
+    test_loader = DataLoader(test_dataset, batch_size=tp["batch_size"], shuffle=False, follow_batch=['x_a', 'x_b'])
+    
+    loaders = {"train": train_loader, "valid": valid_loader, "test": test_loader}
 
     gnn_model = GNN(gnn_type = tp["gnn_type"], 
     #                 num_tasks = dataset.num_classes, 
@@ -107,163 +127,102 @@ def run_exp(tp, device_gpu, exp_dir, partition, used_dataset): #
     # loss_mse = torch.nn.MSELoss()  # this is for regression mean squared loss
 
 
-    # evaluator = Evaluator(DSdataset_name)
+#     # evaluator = Evaluator(DSdataset_name)
     
-    print("after loss")
     
     valid_curve = []
     test_curve = []
     train_curve = []
 
-#     for epoch in range(tp["num_epochs"]):
-#     # for epoch in range(60,70):
-#         print("=====Epoch {}".format(epoch))
-#         print('Training...')
+    for epoch in range(tp["num_epochs"]):
+    # for epoch in range(60,70):
+        print("=====Epoch {}".format(epoch))
+        print('Training...')
         
-#         for m, m_name in models:
-#             m.train()
+        for m, m_name in models:
+            m.train()
 
-#         for i_batch, batch in enumerate(tqdm(train_loader, desc="Iteration")):
-#             batch = batch.to(device_gpu)
+        for i_batch, batch in enumerate(tqdm(train_loader, desc="Iteration")):
+            batch = batch.to(device_gpu)
 
-#             h_a = gnn_model(batch.x_a, batch.edge_index_a, batch.edge_attr_a, batch.x_a_batch)
-#             h_b = gnn_model(batch.x_b, batch.edge_index_b, batch.edge_attr_b, batch.x_b_batch)
+            h_a = gnn_model(batch.x_a, batch.edge_index_a, batch.edge_attr_a, batch.x_a_batch)
+            h_b = gnn_model(batch.x_b, batch.edge_index_b, batch.edge_attr_b, batch.x_b_batch)
 
-#             transformer_input = torch.unsqueeze(batch.expression.type(fdtype), dim=1)
-#             z_e, fattn_w_scores_e = transformer_model(transformer_input)
+            transformer_input = torch.unsqueeze(batch.expression.type(fdtype), dim=1)
+            z_e, fattn_w_scores_e = transformer_model(transformer_input)
 
-#             logsoftmax_scores, dist = siamese_model(h_a, h_b, z_e)
-#     #         out = model(data.x, data.edge_index, data.batch)  # Perform a single forward pass.
-#     #         loss = criterion(out, samples_batch.y)  # Compute the loss.
-#     #         print(pd.Series(batch.y.cpu()).value_counts())
-#             cl = loss_nlll(logsoftmax_scores, batch.y.type(torch.long))            
-#             dl = loss_contrastive(dist.reshape(-1), batch.y.type(fdtype))          
-#             loss = tp["loss_w"]*cl + (1-tp["loss_w"])*dl
-#             loss.backward()  # Derive gradients.
-#             optimizer.step()  # Update parameters based on gradients.
-#             cyc_scheduler.step() # after each batch step the scheduler
-#             optimizer.zero_grad()  # Clear gradients.
+            logsoftmax_scores, dist = siamese_model(h_a, h_b, z_e)
+    #         out = model(data.x, data.edge_index, data.batch)  # Perform a single forward pass.
+    #         loss = criterion(out, samples_batch.y)  # Compute the loss.
+    #         print(pd.Series(batch.y.cpu()).value_counts())
+            cl = loss_nlll(logsoftmax_scores, batch.y.type(torch.long))            
+            dl = loss_contrastive(dist.reshape(-1), batch.y.type(fdtype))          
+            loss = tp["loss_w"]*cl + (1-tp["loss_w"])*dl
+            loss.backward()  # Derive gradients.
+            optimizer.step()  # Update parameters based on gradients.
+            cyc_scheduler.step() # after each batch step the scheduler
+            optimizer.zero_grad()  # Clear gradients.
 
-#         print('Evaluating...')
+        print('Evaluating...')
 
-# #         train_perf = eval(train_loader, dsettype="train", device_gpu)
-# #         valid_perf = eval(valid_loader, dsettype="valid", device_gpu)
-# #         test_perf = eval(test_loader, dsettype="test", device_gpu)
+        perfs = {}
 
-#         for m, m_name in models:
-#             m.eval()
+        for dsettype in ["train", "test", "valid"]:
+            for m, m_name in models:
+                m.eval()
 
-#         pred_class = []
-#         ref_class = []
-#         prob_scores = []
+            pred_class = []
+            ref_class = []
+            prob_scores = []
 
-#     #     for data in loader:  # Iterate in batches over the training/test dataset.
-#         for i_batch, batch in enumerate(tqdm(train_loader, desc="Iteration")):
-#             batch = batch.to(device_gpu)
-#             h_a = gnn_model(batch.x_a, batch.edge_index_a, batch.edge_attr_a, batch.x_a_batch)
-#             h_b = gnn_model(batch.x_b, batch.edge_index_b, batch.edge_attr_b, batch.x_b_batch)
+        #     for data in loader:  # Iterate in batches over the training/test dataset.
+            for i_batch, batch in enumerate(tqdm(loaders[dsettype], desc="Iteration")):
+                batch = batch.to(device_gpu)
+                h_a = gnn_model(batch.x_a, batch.edge_index_a, batch.edge_attr_a, batch.x_a_batch)
+                h_b = gnn_model(batch.x_b, batch.edge_index_b, batch.edge_attr_b, batch.x_b_batch)
 
-#             transformer_input = torch.unsqueeze(batch.expression.type(fdtype), dim=1)
-#             z_e, fattn_w_scores_e = transformer_model(transformer_input)
+                transformer_input = torch.unsqueeze(batch.expression.type(fdtype), dim=1)
+                z_e, fattn_w_scores_e = transformer_model(transformer_input)
 
-#             logsoftmax_scores, dist = siamese_model(h_a, h_b, z_e)
+                logsoftmax_scores, dist = siamese_model(h_a, h_b, z_e)
 
-#             __, y_pred_clss = torch.max(logsoftmax_scores, -1)
+                __, y_pred_clss = torch.max(logsoftmax_scores, -1)
 
-#             y_pred_prob  = torch.exp(logsoftmax_scores.detach().cpu()).numpy()
+                y_pred_prob  = torch.exp(logsoftmax_scores.detach().cpu()).numpy()
 
-#             pred_class.extend(y_pred_clss.view(-1).tolist())
-#             ref_class.extend(batch.y.view(-1).tolist())
-#             prob_scores.append(y_pred_prob)
+                pred_class.extend(y_pred_clss.view(-1).tolist())
+                ref_class.extend(batch.y.view(-1).tolist())
+                prob_scores.append(y_pred_prob)
 
-#         prob_scores_arr = np.concatenate(prob_scores, axis=0)
+            prob_scores_arr = np.concatenate(prob_scores, axis=0)
 
-#         train_perf = perfmetric_report(pred_class, ref_class, prob_scores_arr[:,1], epoch,
-#                                       outlog = os.path.join(exp_dir, "train" + ".log"))
-
-#         for m, m_name in models:
-#             m.eval()
-
-#         pred_class = []
-#         ref_class = []
-#         prob_scores = []
-
-#     #     for data in loader:  # Iterate in batches over the training/test dataset.
-#         for i_batch, batch in enumerate(tqdm(valid_loader, desc="Iteration")):
-#             batch = batch.to(device_gpu)
-#             h_a = gnn_model(batch.x_a, batch.edge_index_a, batch.edge_attr_a, batch.x_a_batch)
-#             h_b = gnn_model(batch.x_b, batch.edge_index_b, batch.edge_attr_b, batch.x_b_batch)
-
-#             transformer_input = torch.unsqueeze(batch.expression.type(fdtype), dim=1)
-#             z_e, fattn_w_scores_e = transformer_model(transformer_input)
-
-#             logsoftmax_scores, dist = siamese_model(h_a, h_b, z_e)
-
-#             __, y_pred_clss = torch.max(logsoftmax_scores, -1)
-
-#             y_pred_prob  = torch.exp(logsoftmax_scores.detach().cpu()).numpy()
-
-#             pred_class.extend(y_pred_clss.view(-1).tolist())
-#             ref_class.extend(batch.y.view(-1).tolist())
-#             prob_scores.append(y_pred_prob)
-
-#         prob_scores_arr = np.concatenate(prob_scores, axis=0)
-
-#         valid_perf = perfmetric_report(pred_class, ref_class, prob_scores_arr[:,1], epoch,
-#                                       outlog = os.path.join(exp_dir, "valid" + ".log"))
-
-#         for m, m_name in models:
-#             m.eval()
-
-#         pred_class = []
-#         ref_class = []
-#         prob_scores = []
-
-#     #     for data in loader:  # Iterate in batches over the training/test dataset.
-#         for i_batch, batch in enumerate(tqdm(test_loader, desc="Iteration")):
-#             batch = batch.to(device_gpu)
-#             h_a = gnn_model(batch.x_a, batch.edge_index_a, batch.edge_attr_a, batch.x_a_batch)
-#             h_b = gnn_model(batch.x_b, batch.edge_index_b, batch.edge_attr_b, batch.x_b_batch)
-
-#             transformer_input = torch.unsqueeze(batch.expression.type(fdtype), dim=1)
-#             z_e, fattn_w_scores_e = transformer_model(transformer_input)
-
-#             logsoftmax_scores, dist = siamese_model(h_a, h_b, z_e)
-
-#             __, y_pred_clss = torch.max(logsoftmax_scores, -1)
-
-#             y_pred_prob  = torch.exp(logsoftmax_scores.detach().cpu()).numpy()
-
-#             pred_class.extend(y_pred_clss.view(-1).tolist())
-#             ref_class.extend(batch.y.view(-1).tolist())
-#             prob_scores.append(y_pred_prob)
-
-#         prob_scores_arr = np.concatenate(prob_scores, axis=0)
-
-#         test_perf = perfmetric_report(pred_class, ref_class, prob_scores_arr[:,1], epoch,
-#                                       outlog = os.path.join(exp_dir, "test" + ".log"))
+            dset_perf = perfmetric_report(pred_class, ref_class, prob_scores_arr[:,1], epoch,
+                                          outlog = os.path.join(exp_dir, dsettype + ".log"))
             
-            
-            
+            perfs[dsettype] = dset_perf
+      
 
-#         print({'Train': train_perf, 'Validation': valid_perf, 'Test': test_perf})
+        print({'Train': perfs['train'], 'Validation': perfs['valid'], 'Test': perfs['test']})
 
-#         train_curve.append(train_perf.s_aupr)
-#         valid_curve.append(valid_perf.s_aupr)
-#         test_curve.append(test_perf.s_aupr)
+        train_curve.append(perfs['train'].s_aupr)
+        valid_curve.append(perfs['valid'].s_aupr)
+        test_curve.append(perfs['test'].s_aupr)
 
-#     # if 'classification' in dataset.task_type:
-#     best_val_epoch = np.argmax(np.array(valid_curve))
-#     best_train = max(train_curve)
-#     # else:
-#     #     best_val_epoch = np.argmin(np.array(valid_curve))
-#     #     best_train = min(train_curve)
+    # if 'classification' in dataset.task_type:
+    best_val_epoch = np.argmax(np.array(valid_curve))
+    best_train = max(train_curve)
+    # else:
+    #     best_val_epoch = np.argmin(np.array(valid_curve))
+    #     best_train = min(train_curve)
 
-#     print('Finished training!')
-#     print('Best validation score: {}'.format(valid_curve[best_val_epoch]))
-#     print('Test score: {}'.format(test_curve[best_val_epoch]))
+    print('Finished training!')
+    print('Best validation score: {}'.format(valid_curve[best_val_epoch]))
+    print('Test score: {}'.format(test_curve[best_val_epoch]))
 
-#     df_curves = pd.DataFrame(np.array([train_curve, valid_curve, test_curve]).T)
-#     df_curves.columns = ['train', 'valid', 'test']
-#     df_curves.index.name = "epoch"
-#     df_curves.to_csv(exp_dir + "curves.csv")
+    df_curves = pd.DataFrame(np.array([train_curve, valid_curve, test_curve]).T)
+    df_curves.columns = ['train', 'valid', 'test']
+    df_curves.index.name = "epoch"
+    df_curves.to_csv(exp_dir + "/curves.csv")
+    sns.lineplot(data=df_curves).figure.savefig(exp_dir + "/curves.png")
+    
+    queue.put(gpu_num)

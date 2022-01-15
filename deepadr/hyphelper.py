@@ -114,7 +114,7 @@ def run_exp(queue, used_dataset, gpu_num, tp, exp_dir, partition): #
     c_step_size = int(np.ceil(5*num_iter))  # this should be 2-10 times num_iter
 
     base_lr = tp['base_lr']
-    max_lr = 5*base_lr  # 3-5 times base_lr
+    max_lr = tp['max_lr_mul']*base_lr  # 3-5 times base_lr
     optimizer = torch.optim.Adam(models_param, weight_decay=tp["l2_reg"], lr=base_lr)
     cyc_scheduler = torch.optim.lr_scheduler.CyclicLR(optimizer, base_lr, max_lr, step_size_up=c_step_size,
                                                     mode='triangular', cycle_momentum=False)

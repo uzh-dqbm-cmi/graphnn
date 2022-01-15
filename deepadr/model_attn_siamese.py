@@ -35,6 +35,8 @@ class SH_SelfAttention(nn.Module):
         # reweighted value vectors
         z = torch.bmm(attn_w_normalized, X_v)
         
+#         print("SH attn_w_normalized.shape:", attn_w_normalized.shape)
+        
         return z, attn_w_normalized
     
 
@@ -127,13 +129,20 @@ class FeatureEmbAttention(nn.Module):
             X: torch.Tensor, (batch, deepadr similarity type vector, feat_dim), dtype=torch.float32
         '''
 
+#         print("X shape:", X.shape)
+        
         X_scaled = X / (self.input_dim ** (1/4))
         queryv_scaled = self.queryv / (self.input_dim ** (1/4))
         # using  matmul to compute tensor vector multiplication
         
+        print("X_scaled.shape:", X_scaled.shape)
+        print("queryv_scaled.shape:", queryv_scaled.shape)
+        
         # (bsize, seqlen)
         attn_weights = X_scaled.matmul(queryv_scaled)
 
+        print("attn_weights shape:", attn_weights.shape)
+        
         # softmax
         attn_weights_norm = self.softmax(attn_weights)
 
@@ -143,6 +152,52 @@ class FeatureEmbAttention(nn.Module):
         # result will be (bsize, 1, feat_dim)
         # squeeze the result to obtain (bsize, feat_dim)
         z = attn_weights_norm.unsqueeze(1).bmm(X).squeeze(1)
+        
+        # returns (bsize, feat_dim), (bsize, num similarity type vectors)
+        return z, attn_weights_norm
+    
+class FeatureEmbAttention2(nn.Module):
+    def __init__(self, input_dim):
+        '''
+        Args:
+            input_dim: int, size of the input vector (i.e. feature vector)
+        '''
+
+        super().__init__()
+        self.input_dim = input_dim
+        # use this as query vector against the transformer outputs
+        self.queryv = nn.Parameter(torch.randn((input_dim,input_dim), dtype=torch.float32), requires_grad=True)
+        self.softmax = nn.Softmax(dim=1) # normalized across seqlen
+
+    def forward(self, X):
+        '''Performs forward computation
+        Args:
+            X: torch.Tensor, (batch, deepadr similarity type vector, feat_dim), dtype=torch.float32
+        '''
+
+#         print("X shape:", X.shape)
+
+        X_scaled = X / (self.input_dim ** (1/4))
+        queryv_scaled = self.queryv / (self.input_dim ** (1/4))
+        # using  matmul to compute tensor vector multiplication
+        
+        print("X_scaled.shape:", X_scaled.shape)
+        print("queryv_scaled.shape:", queryv_scaled.shape)
+        
+        # (bsize, seqlen)
+        attn_weights = X_scaled.matmul(queryv_scaled).squeeze(1)
+
+        print("attn_weights shape:", attn_weights.shape)
+        
+        # softmax
+        attn_weights_norm = self.softmax(attn_weights)
+
+        # reweighted value vectors (in this case reweighting the original input X)
+        # unsqueeze attn_weights_norm to get (bsize, 1, num similarity type vectors)
+        # perform batch multiplication with X that has shape (bsize, num similarity type vectors, feat_dim)
+        # result will be (bsize, 1, feat_dim)
+        # squeeze the result to obtain (bsize, feat_dim)
+        z = X.squeeze(1).mul(attn_weights_norm)
         
         # returns (bsize, feat_dim), (bsize, num similarity type vectors)
         return z, attn_weights_norm
@@ -171,7 +226,7 @@ class DeepAdr_Transformer(nn.Module):
 
         self.pooling_mode = pooling_mode
         if pooling_mode == 'attn':
-            self.pooling = FeatureEmbAttention(embed_size)
+            self.pooling = FeatureEmbAttention2(embed_size)
         elif pooling_mode == 'mean':
             self.pooling = torch.mean
 

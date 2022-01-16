@@ -67,7 +67,7 @@ def run_exp(queue, used_dataset, gpu_num, tp, exp_dir, partition): #
                     num_layer = tp["num_layer"], 
                     emb_dim = tp["emb_dim"], 
                     drop_ratio = 0.5, 
-                    JK = "last",
+                    JK = "multilayer", #last
                     graph_pooling = tp["graph_pooling"],
                     virtual_node = False,
                     with_edge_attr=False).to(device=device_gpu, dtype=fdtype)

@@ -126,23 +126,21 @@ class FeatureEmbAttention(nn.Module):
     def forward(self, X):
         '''Performs forward computation
         Args:
-            X: torch.Tensor, (batch, deepadr similarity type vector, feat_dim), dtype=torch.float32
+            X: torch.Tensor, (batch, ddi similarity type vector, feat_dim), dtype=torch.float32
         '''
 
-#         print("X shape:", X.shape)
-        
         X_scaled = X / (self.input_dim ** (1/4))
         queryv_scaled = self.queryv / (self.input_dim ** (1/4))
         # using  matmul to compute tensor vector multiplication
         
-        print("X_scaled.shape:", X_scaled.shape)
-        print("queryv_scaled.shape:", queryv_scaled.shape)
+#         print("X_scaled.shape:", X_scaled.shape)
+#         print("queryv_scaled.shape:", queryv_scaled.shape)
         
         # (bsize, seqlen)
         attn_weights = X_scaled.matmul(queryv_scaled)
-
-        print("attn_weights shape:", attn_weights.shape)
         
+#         print("attn_weights shape:", attn_weights.shape)
+
         # softmax
         attn_weights_norm = self.softmax(attn_weights)
 
@@ -156,7 +154,7 @@ class FeatureEmbAttention(nn.Module):
         # returns (bsize, feat_dim), (bsize, num similarity type vectors)
         return z, attn_weights_norm
     
-class FeatureEmbAttention2(nn.Module):
+class GeneEmbAttention(nn.Module):
     def __init__(self, input_dim):
         '''
         Args:
@@ -181,13 +179,13 @@ class FeatureEmbAttention2(nn.Module):
         queryv_scaled = self.queryv / (self.input_dim ** (1/4))
         # using  matmul to compute tensor vector multiplication
         
-        print("X_scaled.shape:", X_scaled.shape)
-        print("queryv_scaled.shape:", queryv_scaled.shape)
+#         print("X_scaled.shape:", X_scaled.shape)
+#         print("queryv_scaled.shape:", queryv_scaled.shape)
         
         # (bsize, seqlen)
         attn_weights = X_scaled.matmul(queryv_scaled).squeeze(1)
 
-        print("attn_weights shape:", attn_weights.shape)
+#         print("attn_weights shape:", attn_weights.shape)
         
         # softmax
         attn_weights_norm = self.softmax(attn_weights)
@@ -226,7 +224,7 @@ class DeepAdr_Transformer(nn.Module):
 
         self.pooling_mode = pooling_mode
         if pooling_mode == 'attn':
-            self.pooling = FeatureEmbAttention2(embed_size)
+            self.pooling = GeneEmbAttention(embed_size)
         elif pooling_mode == 'mean':
             self.pooling = torch.mean
 

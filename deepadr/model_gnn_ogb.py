@@ -12,6 +12,7 @@ from torch_geometric.nn.inits import uniform
 
 from .conv import GNN_node, GNN_node_Virtualnode
 from .dataset import create_setvector_features
+from .model_attn_siamese import FeatureEmbAttention as GNNLayerEmbAttention
 
 from torch_scatter import scatter_mean
 
@@ -33,6 +34,7 @@ class GNN(torch.nn.Module):
 #         self.num_tasks = num_tasks
         self.graph_pooling = graph_pooling
         self.with_edge_attr = with_edge_attr
+        self.layer_pooling = GNNLayerEmbAttention(emb_dim)
 
         if self.num_layer < 2:
             raise ValueError("Number of GNN layers must be greater than 1.")
@@ -80,8 +82,11 @@ class GNN(torch.nn.Module):
             h_graph_cat = torch.cat(h_graphs, dim=1)
 #             print("h_graph_cat shape:", h_graph_cat.shape)
             
-            h_graph = h_graph_cat.reshape(h_graph_cat.shape[0], len(h_graphs), h_graph_cat.shape[1] // len(h_graphs))
-            print("h_graph shape:", h_graph.shape)
+            h_graph_t = h_graph_cat.reshape(h_graph_cat.shape[0], len(h_graphs), h_graph_cat.shape[1] // len(h_graphs))
+#             print("h_graph_t shape:", h_graph_t.shape)
+            
+            h_graph, layer_weights = self.layer_pooling(h_graph_t)
+#             print("h_graph shape:", h_graph.shape)
 
         else:
             h_graph = self.pool(h_node, batch)

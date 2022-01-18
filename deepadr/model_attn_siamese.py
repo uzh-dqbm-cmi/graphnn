@@ -213,18 +213,23 @@ class DeepAdr_Transformer(nn.Module):
 
     def __init__(self, input_size=586, input_embed_dim=64, num_attn_heads=8, mlp_embed_factor=2, 
                 nonlin_func=nn.ReLU(), pdropout=0.3, num_transformer_units=12,
-                pooling_mode = 'attn'):
+                pooling_mode = 'attn', gene_embed_dim=8):
         
         super().__init__()
-        embed_size = input_size
-        self.Wembed = nn.Linear(input_size, embed_size)
+        embed_size = gene_embed_dim
+#         self.GeneEmbed = nn.Linear(1, gene_embed_dim)
+        
+        self.GeneEmbed = nn.Sequential(
+            nn.Linear(1, gene_embed_dim),
+            nonlin_func        
+        )
         
         trfunit_layers = [TransformerUnit(embed_size, num_attn_heads, mlp_embed_factor, nonlin_func, pdropout) for i in range(num_transformer_units)]
         self.trfunit_pipeline = nn.Sequential(*trfunit_layers)
 
         self.pooling_mode = pooling_mode
         if pooling_mode == 'attn':
-            self.pooling = GeneEmbAttention(embed_size)
+            self.pooling = FeatureEmbAttention(gene_embed_dim)
         elif pooling_mode == 'mean':
             self.pooling = torch.mean
 
@@ -240,9 +245,17 @@ class DeepAdr_Transformer(nn.Module):
             X: tensor, (batch, deepadr similarity type vector, input_size)
         """
 
-#         print("X shape:", X.shape)
+        X = X.squeeze(1).unsqueeze(2)
         
-        z = self.trfunit_pipeline(X)
+        print("X shape:", X.shape)
+        
+        z = self.GeneEmbed(X)
+        
+        print("z shape:", z.shape)
+        
+        z = self.trfunit_pipeline(z)
+        
+        print("z after trf shape:", z.shape)
         
         # pool across similarity type vectors
         # Note: z.mean(dim=1) will change shape of z to become (batch, input_size)
@@ -256,6 +269,9 @@ class DeepAdr_Transformer(nn.Module):
         elif self.pooling_mode == 'mean':
             z = self.pooling(z, dim=1)
             fattn_w_norm = None
+        
+        print("z after attn shape:", z.shape)
+        print("fattn_w_norm shape:", fattn_w_norm.shape)
         
         return z, fattn_w_norm
 

@@ -211,13 +211,18 @@ def _init_model_params(named_parameters):
 
 class DeepAdr_Transformer(nn.Module):
 
-    def __init__(self, input_size=586, input_embed_dim=64, num_attn_heads=8, mlp_embed_factor=2, 
+    def __init__(self, input_size=908, input_embed_dim=64, num_attn_heads=8, mlp_embed_factor=2, 
                 nonlin_func=nn.ReLU(), pdropout=0.3, num_transformer_units=12,
-                pooling_mode = 'attn', gene_embed_dim=8):
+                pooling_mode = 'attn', gene_embed_dim=1):
         
         super().__init__()
-        embed_size = gene_embed_dim
-#         self.GeneEmbed = nn.Linear(1, gene_embed_dim)
+        
+        self.gene_embed_dim = gene_embed_dim
+        
+        if (self.gene_embed_dim > 1):
+            embed_size = gene_embed_dim
+        else:
+            embed_size = input_size
         
         self.GeneEmbed = nn.Sequential(
             nn.Linear(1, gene_embed_dim),
@@ -229,7 +234,12 @@ class DeepAdr_Transformer(nn.Module):
 
         self.pooling_mode = pooling_mode
         if pooling_mode == 'attn':
-            self.pooling = FeatureEmbAttention(gene_embed_dim)
+            if (self.gene_embed_dim > 1):
+                self.pooling = FeatureEmbAttention(gene_embed_dim)
+                print("FeatureAttn pooling,", "gene_embed_dim:", gene_embed_dim)
+            else:
+                self.pooling = GeneEmbAttention(embed_size)
+                print("GeneEmbAttention pooling,", "gene_embed_dim:", gene_embed_dim)
         elif pooling_mode == 'mean':
             self.pooling = torch.mean
 
@@ -245,17 +255,17 @@ class DeepAdr_Transformer(nn.Module):
             X: tensor, (batch, deepadr similarity type vector, input_size)
         """
 
-        X = X.squeeze(1).unsqueeze(2)
+        if (self.gene_embed_dim > 1):
+            X = X.squeeze(1).unsqueeze(2)        
+            z = self.GeneEmbed(X)
+        else:
+            z = X
         
-        print("X shape:", X.shape)
-        
-        z = self.GeneEmbed(X)
-        
-        print("z shape:", z.shape)
+#         print("z shape:", z.shape)
         
         z = self.trfunit_pipeline(z)
         
-        print("z after trf shape:", z.shape)
+#         print("z after trf shape:", z.shape)
         
         # pool across similarity type vectors
         # Note: z.mean(dim=1) will change shape of z to become (batch, input_size)
@@ -270,8 +280,8 @@ class DeepAdr_Transformer(nn.Module):
             z = self.pooling(z, dim=1)
             fattn_w_norm = None
         
-        print("z after attn shape:", z.shape)
-        print("fattn_w_norm shape:", fattn_w_norm.shape)
+#         print("z after attn shape:", z.shape)
+#         print("fattn_w_norm shape:", fattn_w_norm.shape)
         
         return z, fattn_w_norm
 

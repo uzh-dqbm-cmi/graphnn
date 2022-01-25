@@ -105,7 +105,7 @@ def _init_model_params(named_parameters):
 
 class DeepAdr_SiameseTrf(nn.Module):
 
-    def __init__(self, input_dim, dist, expression_dim, num_classes=2, drop=0.5, do_softmax=True):
+    def __init__(self, input_dim, dist, expression_dim, gene_embed_dim=1, num_classes=2, drop=0.5, do_softmax=True):
         
         super().__init__()
         

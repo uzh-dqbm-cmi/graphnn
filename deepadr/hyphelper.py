@@ -42,7 +42,10 @@ def generate_tp_hp(tp, hp, hp_names):
 
 def run_exp(queue, used_dataset, gpu_num, tp, exp_dir, partition): #
     
+    num_classes = 2
+    
     targetdata_dir_raw = os.path.abspath(exp_dir + "/../../raw")
+    targetdata_dir_processed = os.path.abspath(exp_dir + "/../../processed")
     
     device_gpu = get_device(True, index=gpu_num)
     print("gpu:", device_gpu)
@@ -63,32 +66,34 @@ def run_exp(queue, used_dataset, gpu_num, tp, exp_dir, partition): #
     loaders = {"train": train_loader, "valid": valid_loader, "test": test_loader}
 
     gnn_model = GNN(gnn_type = tp["gnn_type"], 
-    #                 num_tasks = dataset.num_classes, 
-                    num_layer = tp["num_layer"], 
-                    emb_dim = tp["emb_dim"], 
-                    drop_ratio = 0.5, 
-                    JK = "multilayer", #last
-                    graph_pooling = tp["graph_pooling"],
-                    virtual_node = False,
-                    with_edge_attr=False).to(device=device_gpu, dtype=fdtype)
+#                 num_tasks = dataset.num_classes, 
+                num_layer = tp["num_layer"], 
+                emb_dim = tp["emb_dim"], 
+                drop_ratio = 0.5, 
+                JK = "multilayer", #last
+                graph_pooling = tp["graph_pooling"],
+                virtual_node = False,
+                with_edge_attr=False).to(device=device_gpu, dtype=fdtype)
 
     transformer_model = DeepAdr_Transformer(input_size=tp["expression_input_size"],
-                                            input_embed_dim=tp["input_embed_dim"],
-                                            num_attn_heads=tp["num_attn_heads"],
-                                            mlp_embed_factor=tp["mlp_embed_factor"],
-                                            nonlin_func=tp["nonlin_func"],
-                                            pdropout=tp["p_dropout"],
-                                            num_transformer_units=tp["num_transformer_units"],
-                                            pooling_mode=tp["pooling_mode"]).to(device=device_gpu, dtype=fdtype)
+                                        input_embed_dim=tp["input_embed_dim"],
+                                        num_attn_heads=tp["num_attn_heads"],
+                                        mlp_embed_factor=tp["mlp_embed_factor"],
+                                        nonlin_func=tp["nonlin_func"],
+                                        pdropout=tp["p_dropout"],
+                                        num_transformer_units=tp["num_transformer_units"],
+                                        pooling_mode=tp["pooling_mode"],
+                                        gene_embed_dim=tp['gene_embed_dim']).to(device=device_gpu, dtype=fdtype)
 
     # expression_model = ExpressionNN(D_in=tp["expression_input_size"],
     #                                 H1=tp["exp_H1"], H2=tp["exp_H2"],
     #                                 D_out=tp["expression_dim"], drop=0.5).to(device=device_gpu, dtype=fdtype)
 
     siamese_model = DeepAdr_SiameseTrf(input_dim=tp["emb_dim"],
-                                       dist=tp["dist_opt"],
-                                       expression_dim=tp["expression_input_size"],
-                                       num_classes=2).to(device=device_gpu, dtype=fdtype)
+                                   dist=tp["dist_opt"],
+                                   expression_dim=tp["expression_input_size"],
+                                   gene_embed_dim=tp['gene_embed_dim'],
+                                   num_classes=num_classes).to(device=device_gpu, dtype=fdtype)
 
     # models_param = list(gnn_model.parameters()) + list(transformer_model.parameters()) + list(siamese_model.parameters()) + list(expression_model.parameters())
     models_param = list(gnn_model.parameters()) + list(transformer_model.parameters()) + list(siamese_model.parameters())
@@ -105,7 +110,7 @@ def run_exp(queue, used_dataset, gpu_num, tp, exp_dir, partition): #
 
     y_weights = ReaderWriter.read_data(os.path.join(targetdata_dir_raw, 'y_weights.pkl'))
     class_weights = torch.tensor(y_weights).type(fdtype).to(device_gpu)
-    class_weights
+#     class_weights
 
     # from IPython.display import Javascript
     # display(Javascript('''google.colab.output.setIframeHeight(0, true, {maxHeight: 300})'''))
@@ -148,8 +153,8 @@ def run_exp(queue, used_dataset, gpu_num, tp, exp_dir, partition): #
             h_a = gnn_model(batch.x_a, batch.edge_index_a, batch.edge_attr_a, batch.x_a_batch)
             h_b = gnn_model(batch.x_b, batch.edge_index_b, batch.edge_attr_b, batch.x_b_batch)
 
-            transformer_input = torch.unsqueeze(batch.expression.type(fdtype), dim=1)
-            z_e, fattn_w_scores_e = transformer_model(transformer_input)
+            z_e, _ = transformer_model(torch.unsqueeze(batch.expression.type(fdtype), dim=1))
+
 
             logsoftmax_scores, dist = siamese_model(h_a, h_b, z_e)
     #         out = model(data.x, data.edge_index, data.batch)  # Perform a single forward pass.
@@ -174,6 +179,9 @@ def run_exp(queue, used_dataset, gpu_num, tp, exp_dir, partition): #
             pred_class = []
             ref_class = []
             prob_scores = []
+            
+            fattn_w_scores_e_ids = []
+
 
         #     for data in loader:  # Iterate in batches over the training/test dataset.
             for i_batch, batch in enumerate(tqdm(loaders[dsettype], desc="Iteration")):
@@ -181,8 +189,11 @@ def run_exp(queue, used_dataset, gpu_num, tp, exp_dir, partition): #
                 h_a = gnn_model(batch.x_a, batch.edge_index_a, batch.edge_attr_a, batch.x_a_batch)
                 h_b = gnn_model(batch.x_b, batch.edge_index_b, batch.edge_attr_b, batch.x_b_batch)
 
-                transformer_input = torch.unsqueeze(batch.expression.type(fdtype), dim=1)
-                z_e, fattn_w_scores_e = transformer_model(transformer_input)
+                z_e, fattn_w_scores_e = transformer_model(torch.unsqueeze(batch.expression.type(fdtype), dim=1))
+                
+                if (dsettype=="test"):
+                    fattn_w_scores_e_ids.append(torch.cat((batch.id.unsqueeze(1), fattn_w_scores_e), 1))
+
 
                 logsoftmax_scores, dist = siamese_model(h_a, h_b, z_e)
 
@@ -200,6 +211,13 @@ def run_exp(queue, used_dataset, gpu_num, tp, exp_dir, partition): #
                                           outlog = os.path.join(exp_dir, dsettype + ".log"))
             
             perfs[dsettype] = dset_perf
+            
+            if (dsettype=="test"):
+                fattn_w_scores_e_ids_np = torch.cat(fattn_w_scores_e_ids).detach().cpu().numpy()
+                df_fattn_w_scores_e_ids = pd.DataFrame(fattn_w_scores_e_ids_np)
+                df_fattn_w_scores_e_ids.columns = ["id"] + ["gex"+str(i) for i in range(int(tp['expression_input_size']))]
+                df_fattn_w_scores_e_ids.to_csv(os.path.join(exp_dir, "fattn_w_scores_e_ids_test" + ".csv"))
+
       
 
         print({'Train': perfs['train'], 'Validation': perfs['valid'], 'Test': perfs['test']})

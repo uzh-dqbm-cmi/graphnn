@@ -135,9 +135,13 @@ def run_exp(queue, used_dataset, gpu_num, tp, exp_dir, partition): #
 #     # evaluator = Evaluator(DSdataset_name)
     
     
-    valid_curve = []
-    test_curve = []
-    train_curve = []
+    valid_curve_aupr = []
+    test_curve_aupr = []
+    train_curve_aupr = []
+    
+    valid_curve_auc = []
+    test_curve_auc = []
+    train_curve_auc = []
 
     for epoch in range(tp["num_epochs"]):
     # for epoch in range(60,70):
@@ -222,23 +226,28 @@ def run_exp(queue, used_dataset, gpu_num, tp, exp_dir, partition): #
 
         print({'Train': perfs['train'], 'Validation': perfs['valid'], 'Test': perfs['test']})
 
-        train_curve.append(perfs['train'].s_aupr)
-        valid_curve.append(perfs['valid'].s_aupr)
-        test_curve.append(perfs['test'].s_aupr)
+        train_curve_aupr.append(perfs['train'].s_aupr)
+        valid_curve_aupr.append(perfs['valid'].s_aupr)
+        test_curve_aupr.append(perfs['test'].s_aupr)
+        
+        train_curve_auc.append(perfs['train'].s_auc)
+        valid_curve_auc.append(perfs['valid'].s_auc)
+        test_curve_auc.append(perfs['test'].s_auc)
 
     # if 'classification' in dataset.task_type:
-    best_val_epoch = np.argmax(np.array(valid_curve))
-    best_train = max(train_curve)
+    best_val_epoch = np.argmax(np.array(valid_curve_aupr))
+    best_train = max(train_curve_aupr)
     # else:
     #     best_val_epoch = np.argmin(np.array(valid_curve))
     #     best_train = min(train_curve)
 
     print('Finished training!')
-    print('Best validation score: {}'.format(valid_curve[best_val_epoch]))
-    print('Test score: {}'.format(test_curve[best_val_epoch]))
+    print('Best validation score: {}'.format(train_curve_aupr[best_val_epoch]))
+    print('Test score: {}'.format(test_curve_aupr[best_val_epoch]))
 
-    df_curves = pd.DataFrame(np.array([train_curve, valid_curve, test_curve]).T)
-    df_curves.columns = ['train', 'valid', 'test']
+    df_curves = pd.DataFrame(np.array([train_curve_aupr, valid_curve_aupr, test_curve_aupr,
+                                       train_curve_auc, valid_curve_auc, test_curve_auc]).T)
+    df_curves.columns = ['train_aupr', 'valid_aupr', 'test_aupr', 'train_auc', 'valid_auc', 'test_auc']
     df_curves.index.name = "epoch"
     df_curves.to_csv(exp_dir + "/curves.csv")
     sns.lineplot(data=df_curves).figure.savefig(exp_dir + "/curves.png")

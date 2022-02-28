@@ -164,7 +164,8 @@ class GeneEmbAttention(nn.Module):
         super().__init__()
         self.input_dim = input_dim
         # use this as query vector against the transformer outputs
-        self.queryv = nn.Parameter(torch.randn((input_dim,input_dim), dtype=torch.float32), requires_grad=True)
+#         self.queryv = nn.Parameter(torch.randn((input_dim,input_dim), dtype=torch.float32), requires_grad=True)
+        self.queryv = nn.Parameter(torch.randn((1,1), dtype=torch.float32), requires_grad=True)
         self.softmax = nn.Softmax(dim=1) # normalized across seqlen
 
     def forward(self, X):
@@ -172,6 +173,8 @@ class GeneEmbAttention(nn.Module):
         Args:
             X: torch.Tensor, (batch, deepadr similarity type vector, feat_dim), dtype=torch.float32
         '''
+        
+        X = X.squeeze(1).unsqueeze(2)
 
 #         print("X shape:", X.shape)
 
@@ -183,22 +186,34 @@ class GeneEmbAttention(nn.Module):
 #         print("queryv_scaled.shape:", queryv_scaled.shape)
         
         # (bsize, seqlen)
-        attn_weights = X_scaled.matmul(queryv_scaled).squeeze(1)
+#         attn_weights = X_scaled.matmul(queryv_scaled).squeeze(1)
+        attn_weights = X_scaled.mul(queryv_scaled).squeeze(1)
 
 #         print("attn_weights shape:", attn_weights.shape)
         
         # softmax
         attn_weights_norm = self.softmax(attn_weights)
+        
+#         print("attn_weights_norm shape:", attn_weights_norm.shape)
+
 
         # reweighted value vectors (in this case reweighting the original input X)
         # unsqueeze attn_weights_norm to get (bsize, 1, num similarity type vectors)
         # perform batch multiplication with X that has shape (bsize, num similarity type vectors, feat_dim)
         # result will be (bsize, 1, feat_dim)
         # squeeze the result to obtain (bsize, feat_dim)
+#         z = X.squeeze(1).mul(attn_weights_norm)
         z = X.squeeze(1).mul(attn_weights_norm)
         
+#         print("z shape:", z.shape)
+
+        z_ret = z.squeeze(2)
+        attn_ret = attn_weights_norm.squeeze(2)
+        
         # returns (bsize, feat_dim), (bsize, num similarity type vectors)
-        return z, attn_weights_norm
+#         return z, attn_weights_norm
+        return z_ret, attn_ret
+
 
 def _init_model_params(named_parameters):
     for p_name, p in named_parameters:

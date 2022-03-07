@@ -454,7 +454,14 @@ def get_X_all_pairdata_synergy(uniq_mol, pairs, datafield):
     return {key:pair_ids_to_pairdata_synergy(uniq_mol, pair, datafield) for key, pair in pairs.items()}                        
         
         
-        
+def pair_ids_to_pairdata_synergy_flat(uniq_mol, pair, datafield):
+#     print(a,b)
+    data_a = uniq_mol.loc[pair[0]][datafield]
+    data_b = uniq_mol.loc[pair[1]][datafield]
+    return [data_a, data_b]               
+
+def get_X_all_pairdata_synergy_flat(uniq_mol, pairs, datafield):
+    return {key:pair_ids_to_pairdata_synergy_flat(uniq_mol, pair, datafield) for key, pair in pairs.items()}          
         
         
         

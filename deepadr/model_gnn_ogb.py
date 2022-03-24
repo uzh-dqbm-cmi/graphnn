@@ -154,6 +154,7 @@ class DeepAdr_SiameseTrf(nn.Module):
         dist = self.alpha * (1-dist) + (1-self.alpha) * dist
         
         if (Z_e is not None):
+#             print("shapes:", Z_a.shape, Z_b.shape, Z_e.shape) 
             out = torch.cat([Z_a, Z_b, dist, Z_e], axis=-1)
             y = self.Wy_ze(out)
             y = self.drop(y)
@@ -173,40 +174,86 @@ class DeepAdr_SiameseTrf(nn.Module):
         else:
             return y, dist
 
-class ExpressionNN(nn.Module):
-    def __init__(self, D_in=8785, H1=800, H2=300, D_out=64, drop=0.5):
-        super(ExpressionNN, self).__init__()
+class DeepSynergy(nn.Module):
+    def __init__(self, D_in=2636, H1=8192, H2=4096, D_out=2, drop=0.5):
+        super(DeepSynergy, self).__init__()
         
-        self.kernel = (3,1)
-        self.conv1 = nn.Conv2d(1, 32, self.kernel)
-        D_in = D_in // self.kernel[0] -(self.kernel[0]%2)
+#         self.kernel = (3,1)
+#         self.conv1 = nn.Conv2d(1, 32, self.kernel)
+#         D_in = D_in // self.kernel[0] -(self.kernel[0]%2)
 #         print("D_in", D_in)
 
         # an affine operation: y = Wx + b
         self.fc1 = nn.Linear(D_in, H1) # Fully Connected
         self.fc2 = nn.Linear(H1, H2)
         self.fc3 = nn.Linear(H2, D_out)
+        self.drop_in = nn.Dropout(0.2)
         self.drop = nn.Dropout(drop)
+        self.log_softmax = nn.LogSoftmax(dim=-1)
         self._init_weights()
 
     def forward(self, x):
         
 #         print("x.shape:", x.shape)
-        x = x.unsqueeze(1).unsqueeze(-1)
-        x = F.max_pool2d(F.relu(self.conv1(x)), self.kernel)
+#         x = x.unsqueeze(1).unsqueeze(-1)
+#         x = F.max_pool2d(F.relu(self.conv1(x)), self.kernel)
 #         print("x.shape:", x.shape)
-        x, _ = torch.max(x, 1)
+#         x, _ = torch.max(x, 1)
 #         print("x.shape:", x.shape)
-        x = torch.flatten(x, 1)
+#         x = torch.flatten(x, 1)
 #         print("x.shape:", x.shape)
 
 
         x = F.relu(self.fc1(x))
+        x = self.drop_in(x)
+        x = F.relu(self.fc2(x))
         x = self.drop(x)
+        x = self.fc3(x)
+        return self.log_softmax(x)
+    
+    def _init_weights(self):
+        for m in self.modules():
+            if(isinstance(m, nn.Linear)):
+                nn.init.xavier_normal_(m.weight.data)
+                m.bias.data.uniform_(-1,0)
+    
+class ExpressionNN(nn.Module):
+    def __init__(self, D_in=908, H1=8192, H2=4096, D_out=300, drop=0.5):
+        super(ExpressionNN, self).__init__()
+        
+#         self.kernel = (3,1)
+#         self.conv1 = nn.Conv2d(1, 32, self.kernel)
+#         D_in = D_in // self.kernel[0] -(self.kernel[0]%2)
+#         print("D_in", D_in)
+
+        # an affine operation: y = Wx + b
+        self.fc1 = nn.Linear(D_in, H1) # Fully Connected
+        self.fc2 = nn.Linear(H1, H2)
+        self.fc3 = nn.Linear(H2, D_out)
+        self.drop_in = nn.Dropout(0.2)
+        self.drop = nn.Dropout(drop)
+        self.log_softmax = nn.LogSoftmax(dim=-1)
+        self._init_weights()
+
+    def forward(self, x):
+        
+#         print("x.shape:", x.shape)
+#         x = x.unsqueeze(1).unsqueeze(-1)
+#         x = F.max_pool2d(F.relu(self.conv1(x)), self.kernel)
+#         print("x.shape:", x.shape)
+#         x, _ = torch.max(x, 1)
+#         print("x.shape:", x.shape)
+#         x = torch.flatten(x, 1)
+#         print("x.shape:", x.shape)
+
+
+        x = F.relu(self.fc1(x))
+        x = self.drop_in(x)
         x = F.relu(self.fc2(x))
         x = self.drop(x)
         x = self.fc3(x)
         return x
+#         return self.log_softmax(x)
     
     def _init_weights(self):
         for m in self.modules():

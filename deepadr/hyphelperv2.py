@@ -22,8 +22,8 @@ from deepadr.run_workflow import *
 from deepadr.chemfeatures import *
 # from deepadr.hyphelper import *
 # from deepadr.model_gnn import GCN as testGCN
-from deepadr.model_gnn_ogb import GNN, DeepAdr_SiameseTrf, ExpressionNN
-# from deepadr.model_attn_siamese import *
+from deepadr.model_gnn_ogb import GNN, DeepAdr_SiameseTrf, ExpressionNN, DeepSynergy
+from deepadr.model_attn_siamese import GeneEmbAttention
 from ogb.graphproppred import Evaluator
 # os.chdir(cwd)
 
@@ -100,36 +100,37 @@ def run_exp(queue, used_dataset, gpu_num, tp, exp_dir, partition): #
                 virtual_node = False,
                 with_edge_attr=False).to(device=device_gpu, dtype=fdtype)
 
-    transformer_model = DeepAdr_Transformer(input_size=tp["expression_input_size"],
-                                        input_embed_dim=tp["input_embed_dim"],
-                                        num_attn_heads=tp["num_attn_heads"],
-                                        mlp_embed_factor=tp["mlp_embed_factor"],
-                                        nonlin_func=tp["nonlin_func"],
-                                        pdropout=tp["p_dropout"],
-                                        num_transformer_units=tp["num_transformer_units"],
-                                        pooling_mode=tp["pooling_mode"],
-                                        gene_embed_dim=tp['gene_embed_dim']).to(device=device_gpu, dtype=fdtype)
+#     transformer_model = DeepAdr_Transformer(input_size=tp["expression_input_size"],
+#                                         input_embed_dim=tp["input_embed_dim"],
+#                                         num_attn_heads=tp["num_attn_heads"],
+#                                         mlp_embed_factor=tp["mlp_embed_factor"],
+#                                         nonlin_func=tp["nonlin_func"],
+#                                         pdropout=tp["p_dropout"],
+#                                         num_transformer_units=tp["num_transformer_units"],
+#                                         pooling_mode=tp["pooling_mode"],
+#                                         gene_embed_dim=tp['gene_embed_dim']).to(device=device_gpu, dtype=fdtype)
 
-    # expression_model = ExpressionNN(D_in=tp["expression_input_size"],
-    #                                 H1=tp["exp_H1"], H2=tp["exp_H2"],
-    #                                 D_out=tp["expression_dim"], drop=0.5).to(device=device_gpu, dtype=fdtype)
+    expression_model = DeepSynergy(D_in=(2*tp["emb_dim"])+tp["expression_input_size"]).to(device=device_gpu, dtype=fdtype)
 
-    siamese_model = DeepAdr_SiameseTrf(input_dim=tp["emb_dim"],
-                                   dist=tp["dist_opt"],
-                                   expression_dim=tp["expression_input_size"],
-                                   gene_embed_dim=tp['gene_embed_dim'],
-                                   num_classes=num_classes).to(device=device_gpu, dtype=fdtype)
+#     siamese_model = DeepAdr_SiameseTrf(input_dim=tp["emb_dim"],
+#                                    dist=tp["dist_opt"],
+#                                    expression_dim=tp["emb_dim"],
+#                                    gene_embed_dim=tp['gene_embed_dim'],
+#                                    num_classes=num_classes).to(device=device_gpu, dtype=fdtype)
+
+    gene_attn_model = GeneEmbAttention(input_dim=tp["expression_input_size"]).to(device=device_gpu, dtype=fdtype)
 
     # models_param = list(gnn_model.parameters()) + list(transformer_model.parameters()) + list(siamese_model.parameters()) + list(expression_model.parameters())
-    models_param = list(gnn_model.parameters()) + list(transformer_model.parameters()) + list(siamese_model.parameters())
+    models_param = list(gnn_model.parameters()) + list(expression_model.parameters()) + list(gene_attn_model.parameters())
 
 
     model_name = "ogb"
     models = [(gnn_model, f'{model_name}_GNN'),
-              (transformer_model, f'{model_name}_Transformer'),
-              (siamese_model, f'{model_name}_Siamese'),
-    #           (expression_model, f'{model_name}_Expression'),
+#               (transformer_model, f'{model_name}_Transformer'),
+              (expression_model, f'{model_name}_Expression'),
+#               (siamese_model, f'{model_name}_Siamese'),
     #           (lassonet_model, f'{model_name}_LassoNet')
+              (gene_attn_model, f'{model_name}_GeneAttn'),
              ]
     #models
 
@@ -185,17 +186,22 @@ def run_exp(queue, used_dataset, gpu_num, tp, exp_dir, partition): #
 
             h_a = gnn_model(batch.x_a, batch.edge_index_a, batch.edge_attr_a, batch.x_a_batch)
             h_b = gnn_model(batch.x_b, batch.edge_index_b, batch.edge_attr_b, batch.x_b_batch)
+            
+            h_e, _ = gene_attn_model(batch.expression.type(fdtype))
+            
+            triplet = torch.cat([h_a, h_b, h_e], axis=-1)
 
-            z_e, _ = transformer_model(torch.unsqueeze(batch.expression.type(fdtype), dim=1))
+#             z_e = expression_model(torch.unsqueeze(batch.expression.type(fdtype), dim=1))
+            logsoftmax_scores = expression_model(triplet)
 
 
-            logsoftmax_scores, dist = siamese_model(h_a, h_b, z_e)
+#             logsoftmax_scores, dist = siamese_model(h_a, h_b, z_e)
     #         out = model(data.x, data.edge_index, data.batch)  # Perform a single forward pass.
     #         loss = criterion(out, samples_batch.y)  # Compute the loss.
     #         print(pd.Series(batch.y.cpu()).value_counts())
-            cl = loss_nlll(logsoftmax_scores, batch.y.type(torch.long))            
-            dl = loss_contrastive(dist.reshape(-1), batch.y.type(fdtype))          
-            loss = tp["loss_w"]*cl + (1-tp["loss_w"])*dl
+            loss = loss_nlll(logsoftmax_scores, batch.y.type(torch.long))            
+#             dl = loss_contrastive(dist.reshape(-1), batch.y.type(fdtype))          
+#             loss = tp["loss_w"]*cl + (1-tp["loss_w"])*dl
             loss.backward()  # Derive gradients.
             optimizer.step()  # Update parameters based on gradients.
             cyc_scheduler.step() # after each batch step the scheduler
@@ -224,7 +230,13 @@ def run_exp(queue, used_dataset, gpu_num, tp, exp_dir, partition): #
                 h_a = gnn_model(batch.x_a, batch.edge_index_a, batch.edge_attr_a, batch.x_a_batch)
                 h_b = gnn_model(batch.x_b, batch.edge_index_b, batch.edge_attr_b, batch.x_b_batch)
 
-                z_e, fattn_w_scores_e = transformer_model(torch.unsqueeze(batch.expression.type(fdtype), dim=1))
+                h_e, fattn_w_scores_e = gene_attn_model(batch.expression.type(fdtype))
+
+                triplet = torch.cat([h_a, h_b, h_e], axis=-1)
+                
+    #             z_e = expression_model(torch.unsqueeze(batch.expression.type(fdtype), dim=1))
+                logsoftmax_scores = expression_model(triplet)
+
                 
 #                 ids = batch.id#.unsqueeze(1)
                 
@@ -236,7 +248,7 @@ def run_exp(queue, used_dataset, gpu_num, tp, exp_dir, partition): #
                     fattn_w_scores_e_ids.append(torch.cat((batch.id.unsqueeze(1), fattn_w_scores_e), 1))
 
 
-                logsoftmax_scores, dist = siamese_model(h_a, h_b, z_e)
+#                 logsoftmax_scores, dist = siamese_model(h_a, h_b, z_e)
 
                 __, y_pred_clss = torch.max(logsoftmax_scores, -1)
 

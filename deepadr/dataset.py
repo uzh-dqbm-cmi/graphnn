@@ -521,6 +521,19 @@ class PartitionDataTensor(Dataset):
         
     def __len__(self):
         return(self.num_samples)
+    
+class FlatPartitionDataTensor(Dataset):
+
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+        self.num_samples = len(self.y)  # int, number of docs in the partition
+
+    def __getitem__(self, indx):
+        return x[indx], y[indx]
+        
+    def __len__(self):
+        return(self.num_samples)
 
 def construct_load_dataloaders(dataset_fold, dsettypes, config, wrk_dir):
     """construct dataloaders for the dataset for one fold

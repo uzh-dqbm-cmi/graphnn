@@ -187,10 +187,12 @@ class DeepSynergy(nn.Module):
         self.fc1 = nn.Linear(D_in, H1) # Fully Connected
         self.fc2 = nn.Linear(H1, H2)
         self.fc3 = nn.Linear(H2, D_out)
-        self.drop_in = nn.Dropout(0.2)
+        self.drop_in = nn.Dropout(drop)
         self.drop = nn.Dropout(drop)
         self.log_softmax = nn.LogSoftmax(dim=-1)
         self._init_weights()
+        
+        print(self.drop, self.drop_in)
 
     def forward(self, x):
         

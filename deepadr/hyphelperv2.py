@@ -110,7 +110,8 @@ def run_exp(queue, used_dataset, gpu_num, tp, exp_dir, partition): #
 #                                         pooling_mode=tp["pooling_mode"],
 #                                         gene_embed_dim=tp['gene_embed_dim']).to(device=device_gpu, dtype=fdtype)
 
-    expression_model = DeepSynergy(D_in=(2*tp["emb_dim"])+tp["expression_input_size"]).to(device=device_gpu, dtype=fdtype)
+    expression_model = DeepSynergy(D_in=(2*tp["emb_dim"])+tp["expression_input_size"],
+                                   H1=tp['exp_H1'], H2=tp['exp_H2'], drop=tp['p_dropout']).to(device=device_gpu, dtype=fdtype)
 
 #     siamese_model = DeepAdr_SiameseTrf(input_dim=tp["emb_dim"],
 #                                    dist=tp["dist_opt"],

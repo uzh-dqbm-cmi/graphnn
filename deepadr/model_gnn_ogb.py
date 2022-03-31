@@ -220,7 +220,7 @@ class DeepSynergy(nn.Module):
                 m.bias.data.uniform_(-1,0)
     
 class ExpressionNN(nn.Module):
-    def __init__(self, D_in=908, H1=8192, H2=4096, D_out=300, drop=0.5):
+    def __init__(self, D_in=926, H1=8192, H2=4096, D_out=2, drop=0.5):
         super(ExpressionNN, self).__init__()
         
 #         self.kernel = (3,1)
@@ -236,6 +236,8 @@ class ExpressionNN(nn.Module):
         self.drop = nn.Dropout(drop)
         self.log_softmax = nn.LogSoftmax(dim=-1)
         self._init_weights()
+        
+        print(self.drop, self.drop_in)
 
     def forward(self, x):
         
@@ -254,8 +256,8 @@ class ExpressionNN(nn.Module):
         x = F.relu(self.fc2(x))
         x = self.drop(x)
         x = self.fc3(x)
-        return x
-#         return self.log_softmax(x)
+#         return x
+        return self.log_softmax(x)
     
     def _init_weights(self):
         for m in self.modules():

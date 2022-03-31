@@ -91,7 +91,7 @@ def run_exp_flat(queue, used_dataset, gpu_num, tp, exp_dir, partition): #
     
     loaders = {"train": train_loader, "valid": valid_loader, "test": test_loader}
 
-    deepsynergy_model = DeepSynergy(D_in=tp['deepsynergy_input_size']).to(device=device_gpu, dtype=fdtype)
+    deepsynergy_model = ExpressionNN(D_in=tp['deepsynergy_input_size']).to(device=device_gpu, dtype=fdtype)
     
     print("DS model:\n", deepsynergy_model)
 

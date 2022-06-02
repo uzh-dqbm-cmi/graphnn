@@ -23,7 +23,7 @@ from deepadr.chemfeatures import *
 # from deepadr.hyphelper import *
 # from deepadr.model_gnn import GCN as testGCN
 from deepadr.model_gnn_ogb import GNN, DeepAdr_SiameseTrf, ExpressionNN, DeepSynergy
-from deepadr.model_attn_siamese import GeneEmbAttention
+from deepadr.model_attn_siamese import GeneEmbAttention, GeneEmbProjAttention
 from ogb.graphproppred import Evaluator
 # os.chdir(cwd)
 
@@ -110,8 +110,11 @@ def run_exp(queue, used_dataset, gpu_num, tp, exp_dir, partition): #
 #                                         pooling_mode=tp["pooling_mode"],
 #                                         gene_embed_dim=tp['gene_embed_dim']).to(device=device_gpu, dtype=fdtype)
 
-    expression_model = DeepSynergy(D_in=(2*tp["emb_dim"])+tp["expression_input_size"],
-                                   H1=tp['exp_H1'], H2=tp['exp_H2'], drop=tp['p_dropout']).to(device=device_gpu, dtype=fdtype)
+#     expression_model = DeepSynergy(D_in=(2*tp["emb_dim"])+tp["expression_input_size"],
+#                                    H1=tp['exp_H1'], H2=tp['exp_H2'], drop=tp['p_dropout']).to(device=device_gpu, dtype=fdtype)
+
+    expression_model = DeepSynergy(D_in=(2*tp["emb_dim"])+tp["gene_embed_dim"],
+                               H1=tp['exp_H1'], H2=tp['exp_H2'], drop=tp['p_dropout']).to(device=device_gpu, dtype=fdtype)
 
 #     siamese_model = DeepAdr_SiameseTrf(input_dim=tp["emb_dim"],
 #                                    dist=tp["dist_opt"],
@@ -119,7 +122,9 @@ def run_exp(queue, used_dataset, gpu_num, tp, exp_dir, partition): #
 #                                    gene_embed_dim=tp['gene_embed_dim'],
 #                                    num_classes=num_classes).to(device=device_gpu, dtype=fdtype)
 
-    gene_attn_model = GeneEmbAttention(input_dim=tp["expression_input_size"]).to(device=device_gpu, dtype=fdtype)
+    gene_attn_model = GeneEmbProjAttention(input_dim=tp["expression_input_size"],
+                                           nonlin_func=tp['nonlin_func'],
+                                           gene_embed_dim=tp['gene_embed_dim']).to(device=device_gpu, dtype=fdtype)
 
     # models_param = list(gnn_model.parameters()) + list(transformer_model.parameters()) + list(siamese_model.parameters()) + list(expression_model.parameters())
     models_param = list(gnn_model.parameters()) + list(expression_model.parameters()) + list(gene_attn_model.parameters())

@@ -133,13 +133,13 @@ class FeatureEmbAttention(nn.Module):
         queryv_scaled = self.queryv / (self.input_dim ** (1/4))
         # using  matmul to compute tensor vector multiplication
         
-#         print("X_scaled.shape:", X_scaled.shape)
-#         print("queryv_scaled.shape:", queryv_scaled.shape)
+        print("X_scaled.shape:", X_scaled.shape)
+        print("queryv_scaled.shape:", queryv_scaled.shape)
         
         # (bsize, seqlen)
         attn_weights = X_scaled.matmul(queryv_scaled)
         
-#         print("attn_weights shape:", attn_weights.shape)
+        print("attn_weights shape:", attn_weights.shape)
 
         # softmax
         attn_weights_norm = self.softmax(attn_weights)
@@ -214,6 +214,55 @@ class GeneEmbAttention(nn.Module):
 #         return z, attn_weights_norm
         return z_ret, attn_ret
 
+class GeneEmbProjAttention(nn.Module):
+    def __init__(self, input_dim, nonlin_func=nn.ReLU(), gene_embed_dim=4):
+        '''
+        Args:
+            input_dim: int, size of the input vector (i.e. feature vector)
+        '''
+
+        super().__init__()
+        
+        self.gene_embed_dim = gene_embed_dim
+        
+        
+        self.GeneEmbed = nn.Sequential(
+            nn.Linear(1, self.gene_embed_dim),
+            nonlin_func        
+        )
+
+        if (self.gene_embed_dim > 1):
+            self.pooling = FeatureEmbAttention(self.gene_embed_dim)
+            print("FeatureAttn pooling,", "gene_embed_dim:", self.gene_embed_dim)
+        else:
+            self.pooling = GeneEmbAttention(self.gene_embed_dim)
+            print("GeneEmbAttention pooling,", "gene_embed_dim:", self.gene_embed_dim)
+
+        self._init_params_()
+        
+        
+    def _init_params_(self):
+        _init_model_params(self.named_parameters())
+    
+    def forward(self, X):
+        """
+        Args:
+            X: tensor, (batch, deepadr similarity type vector, input_size)
+        """
+
+        if (self.gene_embed_dim > 1):
+            X = X.squeeze(1).unsqueeze(2)        
+            z = self.GeneEmbed(X)
+        else:
+            z = X
+        
+
+        z, fattn_w_norm = self.pooling(z)
+        
+#         print("z after attn shape:", z.shape)
+#         print("fattn_w_norm shape:", fattn_w_norm.shape)
+        
+        return z, fattn_w_norm
 
 def _init_model_params(named_parameters):
     for p_name, p in named_parameters:

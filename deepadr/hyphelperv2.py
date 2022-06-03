@@ -32,6 +32,8 @@ import functools
 
 fdtype = torch.float32
 
+torch.set_printoptions(precision=6)
+
 
 def compose(*functions):
     return functools.reduce(lambda f, g: lambda x: f(g(x)), functions, lambda x: x)
@@ -193,7 +195,9 @@ def run_exp(queue, used_dataset, gpu_num, tp, exp_dir, partition): #
             h_a = gnn_model(batch.x_a, batch.edge_index_a, batch.edge_attr_a, batch.x_a_batch)
             h_b = gnn_model(batch.x_b, batch.edge_index_b, batch.edge_attr_b, batch.x_b_batch)
             
-            h_e, _ = gene_attn_model(batch.expression.type(fdtype))
+#             h_e, _ = gene_attn_model(batch.expression.type(fdtype))
+            h_e, _ = gene_attn_model(batch.expression.type(fdtype), h_a, h_b)
+
             
             triplet = torch.cat([h_a, h_b, h_e], axis=-1)
 
@@ -236,7 +240,12 @@ def run_exp(queue, used_dataset, gpu_num, tp, exp_dir, partition): #
                 h_a = gnn_model(batch.x_a, batch.edge_index_a, batch.edge_attr_a, batch.x_a_batch)
                 h_b = gnn_model(batch.x_b, batch.edge_index_b, batch.edge_attr_b, batch.x_b_batch)
 
-                h_e, fattn_w_scores_e = gene_attn_model(batch.expression.type(fdtype))
+#                 h_e, fattn_w_scores_e = gene_attn_model(batch.expression.type(fdtype))
+                h_e, fattn_w_scores_e = gene_attn_model(batch.expression.type(fdtype), h_a, h_b)
+
+                
+#                 if (dsettype=="test"):
+#                     print(fattn_w_scores_e[:20, :20])
 
                 triplet = torch.cat([h_a, h_b, h_e], axis=-1)
                 

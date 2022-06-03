@@ -133,13 +133,13 @@ class FeatureEmbAttention(nn.Module):
         queryv_scaled = self.queryv / (self.input_dim ** (1/4))
         # using  matmul to compute tensor vector multiplication
         
-        print("X_scaled.shape:", X_scaled.shape)
-        print("queryv_scaled.shape:", queryv_scaled.shape)
+#         print("X_scaled.shape:", X_scaled.shape)
+#         print("queryv_scaled.shape:", queryv_scaled.shape)
         
         # (bsize, seqlen)
         attn_weights = X_scaled.matmul(queryv_scaled)
         
-        print("attn_weights shape:", attn_weights.shape)
+#         print("attn_weights shape:", attn_weights.shape)
 
         # softmax
         attn_weights_norm = self.softmax(attn_weights)
@@ -150,6 +150,60 @@ class FeatureEmbAttention(nn.Module):
         # result will be (bsize, 1, feat_dim)
         # squeeze the result to obtain (bsize, feat_dim)
         z = attn_weights_norm.unsqueeze(1).bmm(X).squeeze(1)
+        
+        # returns (bsize, feat_dim), (bsize, num similarity type vectors)
+        return z, attn_weights_norm
+    
+class FeatureEmbDrugAttention(nn.Module):
+    def __init__(self, input_dim, X_dim):
+        '''
+        Args:
+            input_dim: int, size of the input vector (i.e. feature vector)
+        '''
+
+        super().__init__()
+        self.input_dim = input_dim
+        self.X_dim = X_dim
+        # use this as query vector against the transformer outputs
+        self.queryv = nn.Parameter(torch.randn(input_dim, dtype=torch.float32), requires_grad=True)
+        self.softmax = nn.Softmax(dim=1) # normalized across seqlen
+
+    def forward(self, X):
+        '''Performs forward computation
+        Args:
+            X: torch.Tensor, (batch, ddi similarity type vector, feat_dim), dtype=torch.float32
+        '''
+
+        X_scaled = X / (self.input_dim ** (1/4))
+#         h_a_scaled = h_a / (self.input_dim ** (1/4))
+#         h_b_scaled = h_b / (self.input_dim ** (1/4))
+        
+        queryv_scaled = self.queryv / (self.input_dim ** (1/4))
+        # using  matmul to compute tensor vector multiplication
+        
+#         print("X_scaled.shape:", X_scaled.shape)
+#         print("queryv_scaled.shape:", queryv_scaled.shape)
+        
+        # (bsize, seqlen)
+        attn_weights = X_scaled.matmul(queryv_scaled)
+        
+#         print("attn_weights shape:", attn_weights.shape)
+#         print("attn_weights X-hab:", attn_weights[:20, 905:912])
+#         print("attn_weights h_ab:", attn_weights[:20, :-20])
+
+
+
+        # softmax
+        attn_weights_norm = self.softmax(attn_weights)[:, :self.X_dim]
+#         print("attn_weights X-norm:", attn_weights_norm[:20, 905:908])
+
+
+        # reweighted value vectors (in this case reweighting the original input X)
+        # unsqueeze attn_weights_norm to get (bsize, 1, num similarity type vectors)
+        # perform batch multiplication with X that has shape (bsize, num similarity type vectors, feat_dim)
+        # result will be (bsize, 1, feat_dim)
+        # squeeze the result to obtain (bsize, feat_dim)
+        z = attn_weights_norm.unsqueeze(1).bmm(X[:, :self.X_dim, :]).squeeze(1)
         
         # returns (bsize, feat_dim), (bsize, num similarity type vectors)
         return z, attn_weights_norm
@@ -224,6 +278,7 @@ class GeneEmbProjAttention(nn.Module):
         super().__init__()
         
         self.gene_embed_dim = gene_embed_dim
+        self.expression_dim = input_dim
         
         
         self.GeneEmbed = nn.Sequential(
@@ -232,8 +287,8 @@ class GeneEmbProjAttention(nn.Module):
         )
 
         if (self.gene_embed_dim > 1):
-            self.pooling = FeatureEmbAttention(self.gene_embed_dim)
-            print("FeatureAttn pooling,", "gene_embed_dim:", self.gene_embed_dim)
+            self.pooling = FeatureEmbDrugAttention(self.gene_embed_dim, X_dim=self.expression_dim)
+            print("FeatureEmbDrugAttention pooling,", "gene_embed_dim:", self.gene_embed_dim)
         else:
             self.pooling = GeneEmbAttention(self.gene_embed_dim)
             print("GeneEmbAttention pooling,", "gene_embed_dim:", self.gene_embed_dim)
@@ -244,14 +299,15 @@ class GeneEmbProjAttention(nn.Module):
     def _init_params_(self):
         _init_model_params(self.named_parameters())
     
-    def forward(self, X):
+    def forward(self, X, h_a, h_b):
         """
         Args:
             X: tensor, (batch, deepadr similarity type vector, input_size)
         """
 
         if (self.gene_embed_dim > 1):
-            X = X.squeeze(1).unsqueeze(2)        
+            Xhab = torch.cat([X, h_a, h_b], dim=1)
+            X = Xhab.squeeze(1).unsqueeze(2)        
             z = self.GeneEmbed(X)
         else:
             z = X

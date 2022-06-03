@@ -4,11 +4,15 @@ This repository contains the code for the DDoS model implementation with PyTorch
 
 DDoS is a Graph Neural Network (GNN) based neural network model used for drug-drug-cell line synergy predictions.
 
+## Data Download
+
+Download `Gene Expression` data (link: [1](https://www.cancerrxgene.org/gdsc1000//GDSC1000_WebResources//Data/preprocessed/Cell_line_RMA_proc_basalExp.txt.zip)) and `Drug Combination` data (link: [2](https://drugcomb.fimm.fi/jing/summary_v_1_5.csv)). Place them into the `data/preprocessing` directory.
+
+
 
 ## Installation
 
 * `git clone` the repo and `cd` into it.
-* Run `pip install -e .` to install the repo's python package.
 
 ## Running 🏃
 

@@ -3,6 +3,11 @@ data/drugcomb/**
 data/drugcombdb/**
 data/synergxdb/**
 data/az_chemicalx/**
+data/preprocessing/summary_v_1_5.csv
+data/preprocessing/Cell_line_RMA_proc_basalExp.txt
+data/preprocessing/gene_gex.tsv
+data/preprocessing/df_rma_landm.tsv
+data/preprocessing/drugcomb_*_*.csv
 *.p
 *.pickle
 *.pkl

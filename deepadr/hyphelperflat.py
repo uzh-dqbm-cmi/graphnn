@@ -1,4 +1,6 @@
 import os
+from os import path
+
 import sys
 import numpy as np
 import pandas as pd
@@ -30,6 +32,20 @@ from ogb.graphproppred import Evaluator
 
 import json
 import functools
+
+# imports from captum library
+from captum.attr import (
+    IntegratedGradients,
+    DeepLift,
+    DeepLiftShap,
+    GradientShap,
+    NoiseTunnel,
+    FeatureAblation,
+    Saliency,
+    InputXGradient,
+    Deconvolution,
+    FeaturePermutation
+)
 
 fdtype = torch.float32
 
@@ -248,6 +264,9 @@ def run_exp_flat(queue, used_dataset, gpu_num, tp, exp_dir, partition): #
     # else:
     #     best_val_epoch = np.argmin(np.array(valid_curve))
     #     best_train = min(train_curve)
+    
+    for m, m_name in models:
+        torch.save(m.state_dict(), os.path.join(exp_dir, 'modelstates', f'{m_name}_statedict.pt'))
 
     print('Finished training!')
 #     print('Best validation score: {}'.format(train_curve_aupr[best_val_epoch]))
@@ -259,5 +278,79 @@ def run_exp_flat(queue, used_dataset, gpu_num, tp, exp_dir, partition): #
     df_curves.index.name = "epoch"
     df_curves.to_csv(exp_dir + "/curves.csv")
     sns.lineplot(data=df_curves).figure.savefig(exp_dir + "/curves.png")
+    
+    queue.put(gpu_num)
+    
+def run_attribution(queue, x_np_norm, gpu_num, tp, exp_dir, partition): #
+    
+    num_classes = 2
+    
+    targetdata_dir_raw = os.path.abspath(exp_dir + "/../../raw")
+    targetdata_dir_processed = os.path.abspath(exp_dir + "/../../processed")
+    
+    device_gpu = get_device(True, index=gpu_num)
+    print("gpu:", device_gpu)
+    
+    # Serialize data into file:
+    json.dump( tp, open( exp_dir + "/hyperparameters.json", 'w' ) )
+    
+    tp['nonlin_func'] = nn.ReLU()
+    
+#     train_dataset = Subset(used_dataset, partition['train'])
+#     val_dataset = Subset(used_dataset, partition['validation'])
+#     test_dataset = Subset(used_dataset, partition['test'])
+    
+#     train_loader = DataLoader(train_dataset, batch_size=tp["batch_size"], shuffle=True)
+#     valid_loader = DataLoader(val_dataset, batch_size=tp["batch_size"], shuffle=False)
+#     test_loader = DataLoader(test_dataset, batch_size=tp["batch_size"], shuffle=False)
+    
+    test_features = np.take(x_np_norm, partition['test'], axis=0)
+    test_input_tensor = torch.from_numpy(test_features).to(device=device_gpu, dtype=fdtype)
+
+    
+#     loaders = {"train": train_loader, "valid": valid_loader, "test": test_loader}
+
+    deepsynergy_model = ExpressionNN(D_in=tp['deepsynergy_input_size']).to(device=device_gpu, dtype=fdtype)
+    
+    print("DS model:\n", deepsynergy_model)
+
+    models_param = list(deepsynergy_model.parameters())
+
+
+    model_name = "deepsynergy"
+    models = [(deepsynergy_model, f'{model_name}_model')]
+    #models 
+    
+    for m, m_name in models:
+        model_path = os.path.join(exp_dir, 'modelstates', f'{m_name}_statedict.pt')
+        
+        if path.isfile(model_path):
+            print('Loading pre-trained model from: {}'.format(model_path))
+            m.load_state_dict(torch.load(model_path)) #, map_location=device
+        else:   
+            print('Missing model states, please train models first.')
+            return
+    
+    print("Starting attr calc...")
+    
+    attrAlgName = 'IntegratedGradients'
+    attrAlg = IntegratedGradients(models[0][0])
+#     DeepLift,
+#     DeepLiftShap,
+#     GradientShap,
+#     NoiseTunnel,
+#     FeatureAblation,
+#     Saliency,
+#     InputXGradient,
+#     Deconvolution,
+#     FeaturePermutation
+    
+    attributions, delta = attrAlg.attribute(test_input_tensor, target=1, return_convergence_delta=True, internal_batch_size=1, n_steps=200)
+    
+    ReaderWriter.dump_tensor(attributions, os.path.join(exp_dir, 'attributions', f'{attrAlgName}_attributions.tensor'))
+#     attributions = attributions.detach().cpu().numpy()
+#     print("attr shape:", attributions.shape)
+    
+#     q_attr.put(attributions)
     
     queue.put(gpu_num)

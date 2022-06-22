@@ -306,6 +306,13 @@ def run_attribution(queue, x_np_norm, gpu_num, tp, exp_dir, partition): #
     
     test_features = np.take(x_np_norm, partition['test'], axis=0)
     test_input_tensor = torch.from_numpy(test_features).to(device=device_gpu, dtype=fdtype)
+    n_test_samples = test_input_tensor.size()[0]
+    
+    test_min, _ = torch.min(test_input_tensor, dim=0)
+    
+    test_bline = test_min.repeat(n_test_samples, 1)
+    
+    print("Testbline shape:", test_bline.size())
 
     
 #     loaders = {"train": train_loader, "valid": valid_loader, "test": test_loader}
@@ -345,7 +352,12 @@ def run_attribution(queue, x_np_norm, gpu_num, tp, exp_dir, partition): #
 #     Deconvolution,
 #     FeaturePermutation
     
-    attributions, delta = attrAlg.attribute(test_input_tensor, target=1, return_convergence_delta=True, internal_batch_size=1, n_steps=200)
+    attributions, delta = attrAlg.attribute(inputs=test_input_tensor,
+                                            baselines=test_bline,
+                                            target=1,
+                                            return_convergence_delta=True,
+                                            internal_batch_size=1,
+                                            n_steps=200)
     
     ReaderWriter.dump_tensor(attributions, os.path.join(exp_dir, 'attributions', f'{attrAlgName}_attributions.tensor'))
 #     attributions = attributions.detach().cpu().numpy()

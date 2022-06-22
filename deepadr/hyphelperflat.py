@@ -209,7 +209,7 @@ def run_exp_flat(queue, used_dataset, gpu_num, tp, exp_dir, partition): #
 
         #     for data in loader:  # Iterate in batches over the training/test dataset.
 #             for i_batch, batch in enumerate(tqdm(loaders[dsettype], desc="Iteration")):
-            for i_batch, (batch_x, batch_y, batch_ids) in enumerate(tqdm(train_loader, desc="Iteration")):
+            for i_batch, (batch_x, batch_y, batch_ids) in enumerate(tqdm(loaders[dsettype], desc="Iteration")):
                 
                 batch_x = batch_x.to(device=device_gpu, dtype=fdtype)
                 batch_y = batch_y.to(device=device_gpu, dtype=fdtype)
@@ -281,7 +281,7 @@ def run_exp_flat(queue, used_dataset, gpu_num, tp, exp_dir, partition): #
     
     queue.put(gpu_num)
     
-def run_attribution(queue, x_np_norm, gpu_num, tp, exp_dir, partition): #
+def run_attribution(queue, x_np_norm, gpu_num, tp, exp_dir, partition, labels): #
     
     num_classes = 2
     
@@ -304,15 +304,24 @@ def run_attribution(queue, x_np_norm, gpu_num, tp, exp_dir, partition): #
 #     valid_loader = DataLoader(val_dataset, batch_size=tp["batch_size"], shuffle=False)
 #     test_loader = DataLoader(test_dataset, batch_size=tp["batch_size"], shuffle=False)
     
-    test_features = np.take(x_np_norm, partition['test'], axis=0)
+    test_partition_TP = partition
+    
+    test_correct_labels = np.take(labels, test_partition_TP)
+    test_correct_labels_tensor = torch.from_numpy(test_correct_labels).to(device=device_gpu, dtype=torch.int64)
+    
+    test_features = np.take(x_np_norm, test_partition_TP, axis=0)
     test_input_tensor = torch.from_numpy(test_features).to(device=device_gpu, dtype=fdtype)
     n_test_samples = test_input_tensor.size()[0]
     
     test_min, _ = torch.min(test_input_tensor, dim=0)
+    test_max, _ = torch.max(test_input_tensor, dim=0)
+
+    epsilon = 1e-3
     
-    test_bline = test_min.repeat(n_test_samples, 1)
+    test_min_bline = (test_min-epsilon).repeat(n_test_samples, 1)
+    test_max_bline = (test_max+epsilon).repeat(n_test_samples, 1)
     
-    print("Testbline shape:", test_bline.size())
+#     print("Testbline shape:", test_bline.size())
 
     
 #     loaders = {"train": train_loader, "valid": valid_loader, "test": test_loader}
@@ -351,18 +360,25 @@ def run_attribution(queue, x_np_norm, gpu_num, tp, exp_dir, partition): #
 #     InputXGradient,
 #     Deconvolution,
 #     FeaturePermutation
+
+    for bline in ['min', 'max']:
+        if (bline == 'min'):
+            test_bline = test_min_bline
+        else:
+            test_bline = test_max_bline
     
-    attributions, delta = attrAlg.attribute(inputs=test_input_tensor,
-                                            baselines=test_bline,
-                                            target=1,
-                                            return_convergence_delta=True,
-                                            internal_batch_size=1,
-                                            n_steps=200)
-    
-    ReaderWriter.dump_tensor(attributions, os.path.join(exp_dir, 'attributions', f'{attrAlgName}_attributions.tensor'))
-#     attributions = attributions.detach().cpu().numpy()
-#     print("attr shape:", attributions.shape)
-    
-#     q_attr.put(attributions)
+        attributions, delta = attrAlg.attribute(inputs=test_input_tensor,
+                                                baselines=test_bline,
+                                                target=test_correct_labels_tensor,
+                                                return_convergence_delta=True,
+                                                internal_batch_size=1,
+                                                n_steps=200)
+
+        ReaderWriter.dump_tensor(attributions, os.path.join(exp_dir, 'attributions', f'{attrAlgName}_attributions_{bline}.tensor'))
+        
+    #     attributions = attributions.detach().cpu().numpy()
+    #     print("attr shape:", attributions.shape)
+
+    #     q_attr.put(attributions)
     
     queue.put(gpu_num)

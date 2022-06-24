@@ -322,6 +322,7 @@ def run_attribution(queue, x_np_norm, gpu_num, tp, exp_dir, partition, labels): 
     test_max_bline = (test_max+epsilon).repeat(n_test_samples, 1)
     
 #     print("Testbline shape:", test_bline.size())
+#     print("test_min_bline range:", torch.min(test_min_bline), torch.max(test_min_bline))
 
     
 #     loaders = {"train": train_loader, "valid": valid_loader, "test": test_loader}
@@ -369,7 +370,8 @@ def run_attribution(queue, x_np_norm, gpu_num, tp, exp_dir, partition, labels): 
     
         attributions, delta = attrAlg.attribute(inputs=test_input_tensor,
                                                 baselines=test_bline,
-                                                target=test_correct_labels_tensor,
+#                                                 target=test_correct_labels_tensor,
+                                                target=1,
                                                 return_convergence_delta=True,
                                                 internal_batch_size=1,
                                                 n_steps=200)

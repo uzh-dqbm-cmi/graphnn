@@ -296,37 +296,6 @@ def run_attribution(queue, x_np_norm, gpu_num, tp, exp_dir, partition, labels): 
     
     tp['nonlin_func'] = nn.ReLU()
     
-#     train_dataset = Subset(used_dataset, partition['train'])
-#     val_dataset = Subset(used_dataset, partition['validation'])
-#     test_dataset = Subset(used_dataset, partition['test'])
-    
-#     train_loader = DataLoader(train_dataset, batch_size=tp["batch_size"], shuffle=True)
-#     valid_loader = DataLoader(val_dataset, batch_size=tp["batch_size"], shuffle=False)
-#     test_loader = DataLoader(test_dataset, batch_size=tp["batch_size"], shuffle=False)
-    
-    test_partition_TP = partition
-    
-    test_correct_labels = np.take(labels, test_partition_TP)
-    test_correct_labels_tensor = torch.from_numpy(test_correct_labels).to(device=device_gpu, dtype=torch.int64)
-    
-    test_features = np.take(x_np_norm, test_partition_TP, axis=0)
-    test_input_tensor = torch.from_numpy(test_features).to(device=device_gpu, dtype=fdtype)
-    n_test_samples = test_input_tensor.size()[0]
-    
-    test_min, _ = torch.min(test_input_tensor, dim=0)
-    test_max, _ = torch.max(test_input_tensor, dim=0)
-
-    epsilon = 1e-3
-    
-    test_min_bline = (test_min-epsilon).repeat(n_test_samples, 1)
-    test_max_bline = (test_max+epsilon).repeat(n_test_samples, 1)
-    
-#     print("Testbline shape:", test_bline.size())
-#     print("test_min_bline range:", torch.min(test_min_bline), torch.max(test_min_bline))
-
-    
-#     loaders = {"train": train_loader, "valid": valid_loader, "test": test_loader}
-
     deepsynergy_model = ExpressionNN(D_in=tp['deepsynergy_input_size']).to(device=device_gpu, dtype=fdtype)
     
     print("DS model:\n", deepsynergy_model)
@@ -348,39 +317,85 @@ def run_attribution(queue, x_np_norm, gpu_num, tp, exp_dir, partition, labels): 
             print('Missing model states, please train models first.')
             return
     
-    print("Starting attr calc...")
+#     train_dataset = Subset(used_dataset, partition['train'])
+#     val_dataset = Subset(used_dataset, partition['validation'])
+#     test_dataset = Subset(used_dataset, partition['test'])
     
-    attrAlgName = 'IntegratedGradients'
-    attrAlg = IntegratedGradients(models[0][0])
-#     DeepLift,
-#     DeepLiftShap,
-#     GradientShap,
-#     NoiseTunnel,
-#     FeatureAblation,
-#     Saliency,
-#     InputXGradient,
-#     Deconvolution,
-#     FeaturePermutation
-
-    for bline in ['min', 'max']:
-        if (bline == 'min'):
-            test_bline = test_min_bline
+#     train_loader = DataLoader(train_dataset, batch_size=tp["batch_size"], shuffle=True)
+#     valid_loader = DataLoader(val_dataset, batch_size=tp["batch_size"], shuffle=False)
+#     test_loader = DataLoader(test_dataset, batch_size=tp["batch_size"], shuffle=False)
+    
+    test_partition_TP_zeros, test_partition_TP_ones = partition
+    
+    for labels in ['zeros', 'ones']:
+        if (labels == 'zeros'):
+            test_partition_TP = test_partition_TP_zeros
+            target = 0
         else:
-            test_bline = test_max_bline
+            test_partition_TP = test_partition_TP_ones
+            target = 1
     
-        attributions, delta = attrAlg.attribute(inputs=test_input_tensor,
-                                                baselines=test_bline,
-#                                                 target=test_correct_labels_tensor,
-                                                target=1,
-                                                return_convergence_delta=True,
-                                                internal_batch_size=1,
-                                                n_steps=200)
+#     test_correct_labels_zeros = np.take(labels, test_partition_TP_zeros)
+#     test_correct_labels_zeros_tensor = torch.from_numpy(test_correct_labels_zeros).to(device=device_gpu, dtype=torch.int64)
+    
+#     test_correct_labels_ones = np.take(labels, test_partition_TP_ones)
+#     test_correct_labels_ones_tensor = torch.from_numpy(test_correct_labels_ones).to(device=device_gpu, dtype=torch.int64)
+    
+        test_features = np.take(x_np_norm, test_partition_TP, axis=0)
+        test_input_tensor = torch.from_numpy(test_features).to(device=device_gpu, dtype=fdtype)
+        n_test_samples = test_input_tensor.size()[0]
 
-        ReaderWriter.dump_tensor(attributions, os.path.join(exp_dir, 'attributions', f'{attrAlgName}_attributions_{bline}.tensor'))
-        
-    #     attributions = attributions.detach().cpu().numpy()
-    #     print("attr shape:", attributions.shape)
+        test_min, _ = torch.min(test_input_tensor, dim=0)
+        test_max, _ = torch.max(test_input_tensor, dim=0)
 
-    #     q_attr.put(attributions)
+        epsilon = 1e-3
+
+        test_min_bline = (test_min-epsilon).repeat(n_test_samples, 1)
+        test_max_bline = (test_max+epsilon).repeat(n_test_samples, 1)
+
+    #     print("Testbline shape:", test_bline.size())
+    #     print("test_min_bline range:", torch.min(test_min_bline), torch.max(test_min_bline))
+
+
+    #     loaders = {"train": train_loader, "valid": valid_loader, "test": test_loader}
+
+
+
+        print("Starting attr calc...")
+
+        attrAlgName = 'IntegratedGradients'
+        attrAlg = IntegratedGradients(models[0][0])
+    #     DeepLift,
+    #     DeepLiftShap,
+    #     GradientShap,
+    #     NoiseTunnel,
+    #     FeatureAblation,
+    #     Saliency,
+    #     InputXGradient,
+    #     Deconvolution,
+    #     FeaturePermutation
+
+        for bline in ['min', 'max']:
+            if (bline == 'min'):
+                test_bline = test_min_bline
+            else:
+                test_bline = test_max_bline
+
+            attributions, deltas = attrAlg.attribute(inputs=test_input_tensor,
+                                                    baselines=test_bline,
+#                                                     target=test_correct_labels_tensor,
+                                                    target=target,
+                                                    return_convergence_delta=True,
+                                                    internal_batch_size=1,
+                                                    n_steps=200)
+
+            ReaderWriter.dump_tensor(attributions, os.path.join(exp_dir, 'attributions', f'{attrAlgName}_attributions_{bline}_{labels}.tensor'))
+
+            ReaderWriter.dump_tensor(deltas, os.path.join(exp_dir, 'attributions', f'{attrAlgName}_deltas_{bline}_{labels}.tensor'))
+
+        #     attributions = attributions.detach().cpu().numpy()
+        #     print("attr shape:", attributions.shape)
+
+        #     q_attr.put(attributions)
     
     queue.put(gpu_num)

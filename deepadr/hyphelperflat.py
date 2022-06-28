@@ -325,15 +325,21 @@ def run_attribution(queue, x_np_norm, gpu_num, tp, exp_dir, partition, labels): 
 #     valid_loader = DataLoader(val_dataset, batch_size=tp["batch_size"], shuffle=False)
 #     test_loader = DataLoader(test_dataset, batch_size=tp["batch_size"], shuffle=False)
     
-    test_partition_TP_zeros, test_partition_TP_ones = partition
+#     test_partition_TP_zeros, test_partition_TP_ones = partition
+    test_partition_TP = partition
     
-    for labels in ['zeros', 'ones']:
+    test_correct_labels = np.take(labels, test_partition_TP)
+    test_correct_labels_tensor = torch.from_numpy(test_correct_labels).to(device=device_gpu, dtype=torch.int64)
+    
+    for labels in ['all']:
         if (labels == 'zeros'):
             test_partition_TP = test_partition_TP_zeros
             target = 0
-        else:
+        elif (labels == 'ones'):
             test_partition_TP = test_partition_TP_ones
             target = 1
+        else:
+            target = test_correct_labels_tensor
     
 #     test_correct_labels_zeros = np.take(labels, test_partition_TP_zeros)
 #     test_correct_labels_zeros_tensor = torch.from_numpy(test_correct_labels_zeros).to(device=device_gpu, dtype=torch.int64)

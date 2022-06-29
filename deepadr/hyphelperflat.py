@@ -281,7 +281,7 @@ def run_exp_flat(queue, used_dataset, gpu_num, tp, exp_dir, partition): #
     
     queue.put(gpu_num)
     
-def run_attribution(queue, x_np_norm, gpu_num, tp, exp_dir, partition, labels): #
+def run_attribution(queue, x_np_norm, gpu_num, tp, exp_dir, partition, labels, attrAlgName): #
     
     num_classes = 2
     
@@ -369,8 +369,16 @@ def run_attribution(queue, x_np_norm, gpu_num, tp, exp_dir, partition, labels): 
 
         print("Starting attr calc...")
 
-        attrAlgName = 'IntegratedGradients'
-        attrAlg = IntegratedGradients(models[0][0])
+#         attrAlgName = 'DeepLiftShap'
+
+        if (attrAlgName == 'IntegratedGradients'):
+            attrAlg = IntegratedGradients(models[0][0])
+        elif (attrAlgName == 'DeepLiftShap'):
+            attrAlg = DeepLiftShap(models[0][0])
+        elif (attrAlgName == 'DeepLift'):
+            attrAlg = DeepLift(models[0][0])
+        elif (attrAlgName == 'GradientShap'):
+            attrAlg = GradientShap(models[0][0])
     #     DeepLift,
     #     DeepLiftShap,
     #     GradientShap,
@@ -381,19 +389,32 @@ def run_attribution(queue, x_np_norm, gpu_num, tp, exp_dir, partition, labels): 
     #     Deconvolution,
     #     FeaturePermutation
 
-        for bline in ['min', 'max']:
+        for bline in ['min']:
             if (bline == 'min'):
                 test_bline = test_min_bline
             else:
                 test_bline = test_max_bline
 
-            attributions, deltas = attrAlg.attribute(inputs=test_input_tensor,
-                                                    baselines=test_bline,
-#                                                     target=test_correct_labels_tensor,
-                                                    target=target,
-                                                    return_convergence_delta=True,
-                                                    internal_batch_size=1,
-                                                    n_steps=200)
+            if (attrAlgName == "IntegratedGradients"):
+                attributions, deltas = attrAlg.attribute(inputs=test_input_tensor,
+                                                        baselines=test_bline,
+    #                                                     target=test_correct_labels_tensor,
+                                                        target=target,
+                                                        return_convergence_delta=True,
+                                                        internal_batch_size=1,
+                                                        n_steps=200)
+#             elif (attrAlgName == "GradientShap"):
+#                 attributions, deltas = attrAlg.attribute(inputs=test_input_tensor,
+#                                                         baselines=test_bline,
+#     #                                                     target=test_correct_labels_tensor,
+#                                                         target=target,
+#                                                         return_convergence_delta=True)
+            else:
+                attributions, deltas = attrAlg.attribute(inputs=test_input_tensor,
+                                                        baselines=test_bline,
+    #                                                     target=test_correct_labels_tensor,
+                                                        target=target,
+                                                        return_convergence_delta=True)
 
             ReaderWriter.dump_tensor(attributions, os.path.join(exp_dir, 'attributions', f'{attrAlgName}_attributions_{bline}_{labels}.tensor'))
 

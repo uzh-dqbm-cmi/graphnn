@@ -281,7 +281,7 @@ def run_exp_flat(queue, used_dataset, gpu_num, tp, exp_dir, partition): #
     
     queue.put(gpu_num)
     
-def run_attribution(queue, x_np_norm, gpu_num, tp, exp_dir, partition, labels, attrAlgName): #
+def run_attribution(queue, x_np_norm, gpu_num, tp, exp_dir, test_partition_TP, train_partition, labels, attrAlgName): #
     
     num_classes = 2
     
@@ -326,7 +326,7 @@ def run_attribution(queue, x_np_norm, gpu_num, tp, exp_dir, partition, labels, a
 #     test_loader = DataLoader(test_dataset, batch_size=tp["batch_size"], shuffle=False)
     
 #     test_partition_TP_zeros, test_partition_TP_ones = partition
-    test_partition_TP = partition
+#     test_partition_TP = partition
     
     test_correct_labels = np.take(labels, test_partition_TP)
     test_correct_labels_tensor = torch.from_numpy(test_correct_labels).to(device=device_gpu, dtype=torch.int64)
@@ -350,6 +350,10 @@ def run_attribution(queue, x_np_norm, gpu_num, tp, exp_dir, partition, labels, a
         test_features = np.take(x_np_norm, test_partition_TP, axis=0)
         test_input_tensor = torch.from_numpy(test_features).to(device=device_gpu, dtype=fdtype)
         n_test_samples = test_input_tensor.size()[0]
+        
+        train_features = np.take(x_np_norm, train_partition, axis=0)
+        train_input_tensor = torch.from_numpy(train_features).to(device=device_gpu, dtype=fdtype)
+        n_train_samples = train_input_tensor.size()[0]
 
         test_min, _ = torch.min(test_input_tensor, dim=0)
         test_max, _ = torch.max(test_input_tensor, dim=0)
@@ -394,6 +398,7 @@ def run_attribution(queue, x_np_norm, gpu_num, tp, exp_dir, partition, labels, a
                 test_bline = test_min_bline
             else:
                 test_bline = test_max_bline
+                
 
             if (attrAlgName == "IntegratedGradients"):
                 attributions, deltas = attrAlg.attribute(inputs=test_input_tensor,
@@ -403,12 +408,14 @@ def run_attribution(queue, x_np_norm, gpu_num, tp, exp_dir, partition, labels, a
                                                         return_convergence_delta=True,
                                                         internal_batch_size=1,
                                                         n_steps=200)
-#             elif (attrAlgName == "GradientShap"):
-#                 attributions, deltas = attrAlg.attribute(inputs=test_input_tensor,
+                
+            elif (attrAlgName == "GradientShap" and train_partition is not None):
+                attributions, deltas = attrAlg.attribute(inputs=test_input_tensor,
 #                                                         baselines=test_bline,
-#     #                                                     target=test_correct_labels_tensor,
-#                                                         target=target,
-#                                                         return_convergence_delta=True)
+                                                        baselines=train_input_tensor,
+    #                                                     target=test_correct_labels_tensor,
+                                                        target=target,
+                                                        return_convergence_delta=True)
             else:
                 attributions, deltas = attrAlg.attribute(inputs=test_input_tensor,
                                                         baselines=test_bline,

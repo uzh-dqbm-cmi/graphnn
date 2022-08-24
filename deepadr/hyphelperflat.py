@@ -34,18 +34,18 @@ import json
 import functools
 
 # imports from captum library
-from captum.attr import (
-    IntegratedGradients,
-    DeepLift,
-    DeepLiftShap,
-    GradientShap,
-    NoiseTunnel,
-    FeatureAblation,
-    Saliency,
-    InputXGradient,
-    Deconvolution,
-    FeaturePermutation
-)
+# from captum.attr import (
+#     IntegratedGradients,
+#     DeepLift,
+#     DeepLiftShap,
+#     GradientShap,
+#     NoiseTunnel,
+#     FeatureAblation,
+#     Saliency,
+#     InputXGradient,
+#     Deconvolution,
+#     FeaturePermutation
+# )
 
 fdtype = torch.float32
 

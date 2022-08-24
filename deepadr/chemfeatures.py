@@ -5,7 +5,7 @@ import collections
 import math
 import pandas as pd
 import numpy as np
-import networkx as nx
+# import networkx as nx
 from itertools import repeat, product, chain
 from scipy.sparse import csr_matrix
 from scipy.sparse.csgraph import minimum_spanning_tree

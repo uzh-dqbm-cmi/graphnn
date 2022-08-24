@@ -66,10 +66,8 @@ def build_predictions_df(ids, true_class, pred_class, prob_scores):
     predictions_df.set_index('id', inplace=True)
     return predictions_df
 
-def run_test(queue, used_dataset, gpu_num, tp, exp_dir, partition):
-    print("gpu_num", gpu_num)
 
-def run_exp(queue, used_dataset, gpu_num, tp, exp_dir, partition): #
+def run_exp_vanilla(queue, used_dataset, gpu_num, tp, exp_dir, partition): #
     
     num_classes = 2
     
@@ -99,7 +97,7 @@ def run_exp(queue, used_dataset, gpu_num, tp, exp_dir, partition): #
                 num_layer = tp["num_layer"], 
                 emb_dim = tp["emb_dim"], 
                 drop_ratio = 0.5, 
-                JK = "multilayer", #last
+                JK = "last",
                 graph_pooling = tp["graph_pooling"],
                 virtual_node = False,
                 with_edge_attr=False).to(device=device_gpu, dtype=fdtype)
@@ -114,11 +112,11 @@ def run_exp(queue, used_dataset, gpu_num, tp, exp_dir, partition): #
 #                                         pooling_mode=tp["pooling_mode"],
 #                                         gene_embed_dim=tp['gene_embed_dim']).to(device=device_gpu, dtype=fdtype)
 
-#     expression_model = DeepSynergy(D_in=(2*tp["emb_dim"])+tp["expression_input_size"],
-#                                    H1=tp['exp_H1'], H2=tp['exp_H2'], drop=tp['p_dropout']).to(device=device_gpu, dtype=fdtype)
+    expression_model = DeepSynergy(D_in=(2*tp["emb_dim"])+tp["expression_input_size"],
+                                   H1=tp['exp_H1'], H2=tp['exp_H2'], drop=tp['p_dropout']).to(device=device_gpu, dtype=fdtype)
 
-    expression_model = DeepSynergy(D_in=(2*tp["emb_dim"])+tp["gene_embed_dim"],
-                               H1=tp['exp_H1'], H2=tp['exp_H2'], drop=tp['p_dropout']).to(device=device_gpu, dtype=fdtype)
+#     expression_model = DeepSynergy(D_in=(2*tp["emb_dim"])+tp["gene_embed_dim"],
+#                                H1=tp['exp_H1'], H2=tp['exp_H2'], drop=tp['p_dropout']).to(device=device_gpu, dtype=fdtype)
 
 #     siamese_model = DeepAdr_SiameseTrf(input_dim=tp["emb_dim"],
 #                                    dist=tp["dist_opt"],
@@ -126,12 +124,12 @@ def run_exp(queue, used_dataset, gpu_num, tp, exp_dir, partition): #
 #                                    gene_embed_dim=tp['gene_embed_dim'],
 #                                    num_classes=num_classes).to(device=device_gpu, dtype=fdtype)
 
-    gene_attn_model = GeneEmbProjAttention(input_dim=tp["expression_input_size"],
-                                           nonlin_func=tp['nonlin_func'],
-                                           gene_embed_dim=tp['gene_embed_dim']).to(device=device_gpu, dtype=fdtype)
+#     gene_attn_model = GeneEmbProjAttention(input_dim=tp["expression_input_size"],
+#                                            nonlin_func=tp['nonlin_func'],
+#                                            gene_embed_dim=tp['gene_embed_dim']).to(device=device_gpu, dtype=fdtype)
 
     # models_param = list(gnn_model.parameters()) + list(transformer_model.parameters()) + list(siamese_model.parameters()) + list(expression_model.parameters())
-    models_param = list(gnn_model.parameters()) + list(expression_model.parameters()) + list(gene_attn_model.parameters())
+    models_param = list(gnn_model.parameters()) + list(expression_model.parameters())
 
 
     model_name = "ogb"
@@ -140,7 +138,7 @@ def run_exp(queue, used_dataset, gpu_num, tp, exp_dir, partition): #
               (expression_model, f'{model_name}_Expression'),
 #               (siamese_model, f'{model_name}_Siamese'),
     #           (lassonet_model, f'{model_name}_LassoNet')
-              (gene_attn_model, f'{model_name}_GeneAttn'),
+#               (gene_attn_model, f'{model_name}_GeneAttn'),
              ]
     #models
 
@@ -198,7 +196,9 @@ def run_exp(queue, used_dataset, gpu_num, tp, exp_dir, partition): #
             h_b = gnn_model(batch.x_b, batch.edge_index_b, batch.edge_attr_b, batch.x_b_batch)
             
 #             h_e, _ = gene_attn_model(batch.expression.type(fdtype))
-            h_e, _ = gene_attn_model(batch.expression.type(fdtype), h_a, h_b)
+#             h_e, _ = gene_attn_model(batch.expression.type(fdtype), h_a, h_b)
+            h_e = batch.expression.type(fdtype)
+
 
             
             triplet = torch.cat([h_a, h_b, h_e], axis=-1)
@@ -231,7 +231,7 @@ def run_exp(queue, used_dataset, gpu_num, tp, exp_dir, partition): #
             ref_class = []
             prob_scores = []
             
-            fattn_w_scores_e_ids = []
+#             fattn_w_scores_e_ids = []
             l_ids = []
            
 
@@ -239,18 +239,18 @@ def run_exp(queue, used_dataset, gpu_num, tp, exp_dir, partition): #
         #     for data in loader:  # Iterate in batches over the training/test dataset.
             for i_batch, batch in enumerate(tqdm(loaders[dsettype], desc="Iteration")):
                 batch = batch.to(device_gpu)
+                
                 h_a = gnn_model(batch.x_a, batch.edge_index_a, batch.edge_attr_a, batch.x_a_batch)
                 h_b = gnn_model(batch.x_b, batch.edge_index_b, batch.edge_attr_b, batch.x_b_batch)
 
-#                 h_e, fattn_w_scores_e = gene_attn_model(batch.expression.type(fdtype))
-                h_e, fattn_w_scores_e = gene_attn_model(batch.expression.type(fdtype), h_a, h_b)
+    #             h_e, _ = gene_attn_model(batch.expression.type(fdtype))
+    #             h_e, _ = gene_attn_model(batch.expression.type(fdtype), h_a, h_b)
+                h_e = batch.expression.type(fdtype)
 
-                
-#                 if (dsettype=="test"):
-#                     print(fattn_w_scores_e[:20, :20])
+
 
                 triplet = torch.cat([h_a, h_b, h_e], axis=-1)
-                
+
     #             z_e = expression_model(torch.unsqueeze(batch.expression.type(fdtype), dim=1))
                 logsoftmax_scores = expression_model(triplet)
 
@@ -261,8 +261,8 @@ def run_exp(queue, used_dataset, gpu_num, tp, exp_dir, partition): #
                 
 #                 print("np ids:", ids.detach().cpu().numpy().shape)
                 
-                if (dsettype=="test"):
-                    fattn_w_scores_e_ids.append(torch.cat((batch.id.unsqueeze(1), fattn_w_scores_e), 1))
+#                 if (dsettype=="test"):
+#                     fattn_w_scores_e_ids.append(torch.cat((batch.id.unsqueeze(1), fattn_w_scores_e), 1))
 
 
 #                 logsoftmax_scores, dist = siamese_model(h_a, h_b, z_e)
@@ -290,10 +290,10 @@ def run_exp(queue, used_dataset, gpu_num, tp, exp_dir, partition): #
                     best_fscore = fscore
                     best_epoch = epoch
                 
-                    fattn_w_scores_e_ids_np = torch.cat(fattn_w_scores_e_ids).detach().cpu().numpy()
-                    df_fattn_w_scores_e_ids = pd.DataFrame(fattn_w_scores_e_ids_np)
-                    df_fattn_w_scores_e_ids.columns = ["id"] + ["gex"+str(i) for i in range(int(tp['expression_input_size']))]
-                    df_fattn_w_scores_e_ids.to_csv(os.path.join(exp_dir, "fattn_w_scores_e_ids_test" + ".csv"))
+#                     fattn_w_scores_e_ids_np = torch.cat(fattn_w_scores_e_ids).detach().cpu().numpy()
+#                     df_fattn_w_scores_e_ids = pd.DataFrame(fattn_w_scores_e_ids_np)
+#                     df_fattn_w_scores_e_ids.columns = ["id"] + ["gex"+str(i) for i in range(int(tp['expression_input_size']))]
+#                     df_fattn_w_scores_e_ids.to_csv(os.path.join(exp_dir, "fattn_w_scores_e_ids_test" + ".csv"))
                 
 #                 np_ids = ids.detach().cpu().numpy()
                 

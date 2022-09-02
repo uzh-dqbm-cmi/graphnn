@@ -84,6 +84,10 @@ def run_exp(queue, used_dataset, gpu_num, tp, exp_dir, partition): #
     
     tp['nonlin_func'] = nn.ReLU()
     
+    expression_scaler = TorchStandardScaler()
+    expression_scaler.fit(used_dataset.data.expression[partition['train']])
+#     used_dataset.data.expression_norm = expression_scaler.transform(used_dataset.data.expression)
+    
     train_dataset = Subset(used_dataset, partition['train'])
     val_dataset = Subset(used_dataset, partition['validation'])
     test_dataset = Subset(used_dataset, partition['test'])
@@ -150,7 +154,8 @@ def run_exp(queue, used_dataset, gpu_num, tp, exp_dir, partition): #
              ]
     #models
 
-    y_weights = ReaderWriter.read_data(os.path.join(targetdata_dir_raw, 'y_weights.pkl'))
+#     y_weights = ReaderWriter.read_data(os.path.join(targetdata_dir_raw, 'y_weights.pkl'))
+    y_weights = compute_class_weights(used_dataset.data.y[partition['train']])
     class_weights = torch.tensor(y_weights).type(fdtype).to(device_gpu)
 #     class_weights
 
@@ -203,13 +208,14 @@ def run_exp(queue, used_dataset, gpu_num, tp, exp_dir, partition): #
             h_a = gnn_model(batch.x_a, batch.edge_index_a, batch.edge_attr_a, batch.x_a_batch)
             h_b = gnn_model(batch.x_b, batch.edge_index_b, batch.edge_attr_b, batch.x_b_batch)
             
-            h_e, _ = gene_attn_model(batch.expression.type(fdtype))
-#             h_e, _ = gene_attn_model(batch.expression.type(fdtype), h_a, h_b)
+            expression_norm = expression_scaler.transform_ondevice(batch.expression, device=device_gpu) 
+            h_e, _ = gene_attn_model(expression_norm.type(fdtype))
+#             h_e, _ = gene_attn_model(batch.expression_norm.type(fdtype), h_a, h_b)
 
             
             triplet = torch.cat([h_a, h_b, h_e], axis=-1)
 
-#             z_e = expression_model(torch.unsqueeze(batch.expression.type(fdtype), dim=1))
+#             z_e = expression_model(torch.unsqueeze(batch.expression_norm.type(fdtype), dim=1))
             logsoftmax_scores = expression_model(triplet)
 
 
@@ -237,7 +243,7 @@ def run_exp(queue, used_dataset, gpu_num, tp, exp_dir, partition): #
             ref_class = []
             prob_scores = []
             
-            fattn_w_scores_e_ids = []
+#             fattn_w_scores_e_ids = []
             l_ids = []
            
 
@@ -248,8 +254,9 @@ def run_exp(queue, used_dataset, gpu_num, tp, exp_dir, partition): #
                 h_a = gnn_model(batch.x_a, batch.edge_index_a, batch.edge_attr_a, batch.x_a_batch)
                 h_b = gnn_model(batch.x_b, batch.edge_index_b, batch.edge_attr_b, batch.x_b_batch)
 
-                h_e, fattn_w_scores_e = gene_attn_model(batch.expression.type(fdtype))
-#                 h_e, fattn_w_scores_e = gene_attn_model(batch.expression.type(fdtype), h_a, h_b)
+                expression_norm = expression_scaler.transform_ondevice(batch.expression, device=device_gpu) 
+                h_e, _ = gene_attn_model(expression_norm.type(fdtype))
+                #                 h_e, fattn_w_scores_e = gene_attn_model(batch.expression_norm.type(fdtype), h_a, h_b)
 
                 
 #                 if (dsettype=="test"):
@@ -257,7 +264,7 @@ def run_exp(queue, used_dataset, gpu_num, tp, exp_dir, partition): #
 
                 triplet = torch.cat([h_a, h_b, h_e], axis=-1)
                 
-    #             z_e = expression_model(torch.unsqueeze(batch.expression.type(fdtype), dim=1))
+    #             z_e = expression_model(torch.unsqueeze(batch.expression_norm.type(fdtype), dim=1))
                 logsoftmax_scores = expression_model(triplet)
 
                 
@@ -267,8 +274,8 @@ def run_exp(queue, used_dataset, gpu_num, tp, exp_dir, partition): #
                 
 #                 print("np ids:", ids.detach().cpu().numpy().shape)
                 
-                if (dsettype=="test"):
-                    fattn_w_scores_e_ids.append(torch.cat((batch.id.unsqueeze(1), fattn_w_scores_e), 1))
+#                 if (dsettype=="test"):
+#                     fattn_w_scores_e_ids.append(torch.cat((batch.id.unsqueeze(1), fattn_w_scores_e), 1))
 
 
 #                 logsoftmax_scores, dist = siamese_model(h_a, h_b, z_e)
@@ -296,10 +303,10 @@ def run_exp(queue, used_dataset, gpu_num, tp, exp_dir, partition): #
                     best_fscore = fscore
                     best_epoch = epoch
                 
-                    fattn_w_scores_e_ids_np = torch.cat(fattn_w_scores_e_ids).detach().cpu().numpy()
-                    df_fattn_w_scores_e_ids = pd.DataFrame(fattn_w_scores_e_ids_np)
-                    df_fattn_w_scores_e_ids.columns = ["id"] + ["gex"+str(i) for i in range(int(tp['expression_input_size']))]
-                    df_fattn_w_scores_e_ids.to_csv(os.path.join(exp_dir, "fattn_w_scores_e_ids_test" + ".csv"))
+#                     fattn_w_scores_e_ids_np = torch.cat(fattn_w_scores_e_ids).detach().cpu().numpy()
+#                     df_fattn_w_scores_e_ids = pd.DataFrame(fattn_w_scores_e_ids_np)
+#                     df_fattn_w_scores_e_ids.columns = ["id"] + ["gex"+str(i) for i in range(int(tp['expression_input_size']))]
+#                     df_fattn_w_scores_e_ids.to_csv(os.path.join(exp_dir, "fattn_w_scores_e_ids_test" + ".csv"))
                 
 #                 np_ids = ids.detach().cpu().numpy()
                 

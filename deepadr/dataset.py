@@ -223,7 +223,18 @@ def get_X_all_pairdata_synergy_flat(uniq_mol, pairs, datafield):
     return {key:pair_ids_to_pairdata_synergy_flat(uniq_mol, pair, datafield) for key, pair in pairs.items()}          
         
         
-        
+class TorchStandardScaler:
+    def fit(self, x):
+        self.mean = x.mean(0, keepdim=True)
+        self.std = x.std(0, unbiased=False, keepdim=True)
+    def transform(self, x):
+        x -= self.mean
+        x /= (self.std + 1e-7)
+        return x
+    def transform_ondevice(self, x, device):
+        x -= self.mean.to(device)
+        x /= (self.std.to(device) + 1e-7)
+        return x 
         
         
         

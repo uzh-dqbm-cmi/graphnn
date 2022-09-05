@@ -76,6 +76,8 @@ def run_exp(queue, used_dataset, gpu_num, tp, exp_dir, partition): #
     targetdata_dir_raw = os.path.abspath(exp_dir + "/../../raw")
     targetdata_dir_processed = os.path.abspath(exp_dir + "/../../processed")
     
+    state_dict_dir = os.path.join(exp_dir, 'modelstates')
+    
     device_gpu = get_device(True, index=gpu_num)
     print("gpu:", device_gpu)
     
@@ -153,6 +155,7 @@ def run_exp(queue, used_dataset, gpu_num, tp, exp_dir, partition): #
               (gene_attn_model, f'{model_name}_GeneAttn'),
              ]
     #models
+    
 
 #     y_weights = ReaderWriter.read_data(os.path.join(targetdata_dir_raw, 'y_weights.pkl'))
     y_weights = compute_class_weights(used_dataset.data.y[partition['train']])
@@ -235,7 +238,7 @@ def run_exp(queue, used_dataset, gpu_num, tp, exp_dir, partition): #
 
         perfs = {}
 
-        for dsettype in ["train", "test", "valid"]:
+        for dsettype in ["train", "valid"]:
             for m, m_name in models:
                 m.eval()
 
@@ -256,29 +259,12 @@ def run_exp(queue, used_dataset, gpu_num, tp, exp_dir, partition): #
 
                 expression_norm = expression_scaler.transform_ondevice(batch.expression, device=device_gpu) 
                 h_e, _ = gene_attn_model(expression_norm.type(fdtype))
-                #                 h_e, fattn_w_scores_e = gene_attn_model(batch.expression_norm.type(fdtype), h_a, h_b)
 
-                
-#                 if (dsettype=="test"):
-#                     print(fattn_w_scores_e[:20, :20])
 
                 triplet = torch.cat([h_a, h_b, h_e], axis=-1)
                 
-    #             z_e = expression_model(torch.unsqueeze(batch.expression_norm.type(fdtype), dim=1))
                 logsoftmax_scores = expression_model(triplet)
 
-                
-#                 ids = batch.id#.unsqueeze(1)
-                
-#                 print("ids:", ids.shape)
-                
-#                 print("np ids:", ids.detach().cpu().numpy().shape)
-                
-#                 if (dsettype=="test"):
-#                     fattn_w_scores_e_ids.append(torch.cat((batch.id.unsqueeze(1), fattn_w_scores_e), 1))
-
-
-#                 logsoftmax_scores, dist = siamese_model(h_a, h_b, z_e)
 
                 __, y_pred_clss = torch.max(logsoftmax_scores, -1)
 
@@ -296,39 +282,120 @@ def run_exp(queue, used_dataset, gpu_num, tp, exp_dir, partition): #
             
             perfs[dsettype] = dset_perf
             
-            if (dsettype=="test"):
+            if (dsettype=="valid"):
                 
-                fscore = F_score(perfs['test'].s_aupr, perfs['test'].s_auc)
+                fscore = F_score(perfs['valid'].s_aupr, perfs['valid'].s_auc)
                 if (fscore > best_fscore):
                     best_fscore = fscore
                     best_epoch = epoch
-                
-#                     fattn_w_scores_e_ids_np = torch.cat(fattn_w_scores_e_ids).detach().cpu().numpy()
-#                     df_fattn_w_scores_e_ids = pd.DataFrame(fattn_w_scores_e_ids_np)
-#                     df_fattn_w_scores_e_ids.columns = ["id"] + ["gex"+str(i) for i in range(int(tp['expression_input_size']))]
-#                     df_fattn_w_scores_e_ids.to_csv(os.path.join(exp_dir, "fattn_w_scores_e_ids_test" + ".csv"))
-                
-#                 np_ids = ids.detach().cpu().numpy()
-                
-#                 print("np_ids.shape: ", len(np_ids))
-#                 print("ref_class.shape: ", len(ref_class))
-#                 print("pred_class.shape: ", len(pred_class))
-#                 print("prob_scores_arr.shape: ", len(prob_scores_arr))
-                
-                predictions_df = build_predictions_df(l_ids, ref_class, pred_class, prob_scores_arr)
-                predictions_df.to_csv(os.path.join(exp_dir, 'predictions', f'epoch_{epoch}_predictions_{dsettype}.csv'))
+                    
+                    for m, m_name in models:
+                        torch.save(m.state_dict(), os.path.join(state_dict_dir, '{}.pkl'.format(m_name)))
 
+
+#             if (dsettype=="test"):
+                
+#                 predictions_df = build_predictions_df(l_ids, ref_class, pred_class, prob_scores_arr)
+#                 predictions_df.to_csv(os.path.join(exp_dir, 'predictions', f'epoch_{epoch}_predictions_{dsettype}.csv'))
       
 
-        print({'Train': perfs['train'], 'Validation': perfs['valid'], 'Test': perfs['test']})
+#         print({'Train': perfs['train'], 'Validation': perfs['valid'], 'Test': perfs['test']})
+        print({'Train': perfs['train'], 'Validation': perfs['valid']})
 
+        
         train_curve_aupr.append(perfs['train'].s_aupr)
         valid_curve_aupr.append(perfs['valid'].s_aupr)
-        test_curve_aupr.append(perfs['test'].s_aupr)
+#         test_curve_aupr.append(perfs['test'].s_aupr)
+        test_curve_aupr.append(0.0)
+
         
         train_curve_auc.append(perfs['train'].s_auc)
         valid_curve_auc.append(perfs['valid'].s_auc)
+#         test_curve_auc.append(perfs['test'].s_auc)
+        test_curve_auc.append(0.0)
+
+
+    print('Finished training and validating!')
+        
+        
+    for dsettype in ["test"]:
+        
+        if(len(os.listdir(state_dict_dir)) > 0):  # load state dictionary of saved models
+            for m, m_name in models:
+                m.load_state_dict(torch.load(os.path.join(state_dict_dir, '{}.pkl'.format(m_name)), map_location=device_gpu))
+
+        
+        for m, m_name in models:
+            m.eval()
+
+        pred_class = []
+        ref_class = []
+        prob_scores = []
+
+#             fattn_w_scores_e_ids = []
+        l_ids = []
+
+
+
+    #     for data in loader:  # Iterate in batches over the training/test dataset.
+        for i_batch, batch in enumerate(tqdm(loaders[dsettype], desc="Iteration")):
+            batch = batch.to(device_gpu)
+            h_a = gnn_model(batch.x_a, batch.edge_index_a, batch.edge_attr_a, batch.x_a_batch)
+            h_b = gnn_model(batch.x_b, batch.edge_index_b, batch.edge_attr_b, batch.x_b_batch)
+
+            expression_norm = expression_scaler.transform_ondevice(batch.expression, device=device_gpu) 
+            h_e, _ = gene_attn_model(expression_norm.type(fdtype))
+
+
+            triplet = torch.cat([h_a, h_b, h_e], axis=-1)
+
+            logsoftmax_scores = expression_model(triplet)
+
+
+            __, y_pred_clss = torch.max(logsoftmax_scores, -1)
+
+            y_pred_prob  = torch.exp(logsoftmax_scores.detach().cpu()).numpy()
+
+            pred_class.extend(y_pred_clss.view(-1).tolist())
+            ref_class.extend(batch.y.view(-1).tolist())
+            prob_scores.append(y_pred_prob)
+            l_ids.extend(batch.id.view(-1).tolist())
+
+        prob_scores_arr = np.concatenate(prob_scores, axis=0)
+
+        dset_perf = perfmetric_report(pred_class, ref_class, prob_scores_arr[:,1], epoch,
+                                      outlog = os.path.join(exp_dir, dsettype + ".log"))
+
+        perfs[dsettype] = dset_perf
+
+#         if (dsettype=="valid"):
+
+#             fscore = F_score(perfs['test'].s_aupr, perfs['test'].s_auc)
+#             if (fscore > best_fscore):
+#                 best_fscore = fscore
+#                 best_epoch = epoch
+
+#                 for m, m_name in models:
+#                     torch.save(m.state_dict(), os.path.join(m_state_dict_dir, '{}.pkl'.format(m_name)))
+
+
+        if (dsettype=="test"):
+
+            predictions_df = build_predictions_df(l_ids, ref_class, pred_class, prob_scores_arr)
+            predictions_df.to_csv(os.path.join(exp_dir, 'predictions', f'epoch_{epoch}_predictions_{dsettype}.csv'))
+            
+        print({'Test': perfs['test']})
+
+#         train_curve_aupr.append(perfs['train'].s_aupr)
+#         valid_curve_aupr.append(perfs['valid'].s_aupr)
+        test_curve_aupr.pop()
+        test_curve_aupr.append(perfs['test'].s_aupr)
+        
+#         train_curve_auc.append(perfs['train'].s_auc)
+#         valid_curve_auc.append(perfs['valid'].s_auc)
+        test_curve_auc.pop()
         test_curve_auc.append(perfs['test'].s_auc)
+
        
 
     # if 'classification' in dataset.task_type:
@@ -338,7 +405,7 @@ def run_exp(queue, used_dataset, gpu_num, tp, exp_dir, partition): #
     #     best_val_epoch = np.argmin(np.array(valid_curve))
     #     best_train = min(train_curve)
 
-    print('Finished training!')
+    print('Finished testing!')
 #     print('Best validation score: {}'.format(train_curve_aupr[best_val_epoch]))
 #     print('Test score: {}'.format(test_curve_aupr[best_val_epoch]))
 

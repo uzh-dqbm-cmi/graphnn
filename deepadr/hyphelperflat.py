@@ -243,7 +243,7 @@ def run_exp_flat(queue, used_dataset, gpu_num, tp, exp_dir, partition): #
             
             if (dsettype=="valid"):
                 
-                fscore = F_score(perfs['test'].s_aupr, perfs['test'].s_auc)
+                fscore = F_score(perfs['valid'].s_aupr, perfs['valid'].s_auc)
                 if (fscore > best_fscore):
                     best_fscore = fscore
                     best_epoch = epoch

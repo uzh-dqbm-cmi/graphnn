@@ -89,6 +89,8 @@ def run_exp_flat(queue, used_dataset, gpu_num, tp, exp_dir, partition): #
     targetdata_dir_raw = os.path.abspath(exp_dir + "/../../raw")
     targetdata_dir_processed = os.path.abspath(exp_dir + "/../../processed")
     
+    state_dict_dir = os.path.join(exp_dir, 'modelstates')
+    
     device_gpu = get_device(True, index=gpu_num)
     print("gpu:", device_gpu)
     
@@ -96,6 +98,9 @@ def run_exp_flat(queue, used_dataset, gpu_num, tp, exp_dir, partition): #
     json.dump( tp, open( exp_dir + "/hyperparameters.json", 'w' ) )
     
     tp['nonlin_func'] = nn.ReLU()
+    
+    expression_scaler = TorchStandardScaler()
+    expression_scaler.fit(used_dataset[partition['train']][0])
     
     train_dataset = Subset(used_dataset, partition['train'])
     val_dataset = Subset(used_dataset, partition['validation'])
@@ -118,7 +123,8 @@ def run_exp_flat(queue, used_dataset, gpu_num, tp, exp_dir, partition): #
     models = [(deepsynergy_model, f'{model_name}_model')]
     #models
 
-    y_weights = ReaderWriter.read_data(os.path.join(targetdata_dir_raw, 'y_weights.pkl'))
+#     y_weights = ReaderWriter.read_data(os.path.join(targetdata_dir_raw, 'y_weights.pkl'))
+    y_weights = compute_class_weights(used_dataset[partition['train']][1])
     class_weights = torch.tensor(y_weights).to(device=device_gpu, dtype=fdtype)
 #     class_weights
 
@@ -176,7 +182,8 @@ def run_exp_flat(queue, used_dataset, gpu_num, tp, exp_dir, partition): #
 
 #             z_e, _ = transformer_model(torch.unsqueeze(batch.expression.type(fdtype), dim=1))
 
-            logsoftmax_scores = deepsynergy_model(batch_x)
+            batch_x_norm = expression_scaler.transform_ondevice(batch_x, device=device_gpu)
+            logsoftmax_scores = deepsynergy_model(batch_x_norm)
 
 #             logsoftmax_scores, dist = siamese_model(h_a, h_b, z_e)
     #         out = model(data.x, data.edge_index, data.batch)  # Perform a single forward pass.
@@ -194,7 +201,7 @@ def run_exp_flat(queue, used_dataset, gpu_num, tp, exp_dir, partition): #
 
         perfs = {}
 
-        for dsettype in ["train", "test", "valid"]:
+        for dsettype in ["train", "valid"]:
             for m, m_name in models:
                 m.eval()
 
@@ -214,7 +221,8 @@ def run_exp_flat(queue, used_dataset, gpu_num, tp, exp_dir, partition): #
                 batch_x = batch_x.to(device=device_gpu, dtype=fdtype)
                 batch_y = batch_y.to(device=device_gpu, dtype=fdtype)
 
-                logsoftmax_scores = deepsynergy_model(batch_x)
+                batch_x_norm = expression_scaler.transform_ondevice(batch_x, device=device_gpu)
+                logsoftmax_scores = deepsynergy_model(batch_x_norm)
           
 
                 __, y_pred_clss = torch.max(logsoftmax_scores, -1)
@@ -233,29 +241,34 @@ def run_exp_flat(queue, used_dataset, gpu_num, tp, exp_dir, partition): #
             
             perfs[dsettype] = dset_perf
             
-            if (dsettype=="test"):
+            if (dsettype=="valid"):
                 
                 fscore = F_score(perfs['test'].s_aupr, perfs['test'].s_auc)
                 if (fscore > best_fscore):
                     best_fscore = fscore
                     best_epoch = epoch
+                    
+                    for m, m_name in models:
+                        torch.save(m.state_dict(), os.path.join(state_dict_dir, '{}.pkl'.format(m_name)))
+
                 
-                   
-                
-                predictions_df = build_predictions_df(l_ids, ref_class, pred_class, prob_scores_arr)
-                predictions_df.to_csv(os.path.join(exp_dir, 'predictions', f'epoch_{epoch}_predictions_{dsettype}.csv'))
+#                 predictions_df = build_predictions_df(l_ids, ref_class, pred_class, prob_scores_arr)
+#                 predictions_df.to_csv(os.path.join(exp_dir, 'predictions', f'epoch_{epoch}_predictions_{dsettype}.csv'))
 
       
 
-        print({'Train': perfs['train'], 'Validation': perfs['valid'], 'Test': perfs['test']})
-
+#         print({'Train': perfs['train'], 'Validation': perfs['valid'], 'Test': perfs['test']})
+        print({'Train': perfs['train'], 'Validation': perfs['valid']})
+        
         train_curve_aupr.append(perfs['train'].s_aupr)
         valid_curve_aupr.append(perfs['valid'].s_aupr)
-        test_curve_aupr.append(perfs['test'].s_aupr)
+#         test_curve_aupr.append(perfs['test'].s_aupr)
+        test_curve_aupr.append(0.0)
         
         train_curve_auc.append(perfs['train'].s_auc)
         valid_curve_auc.append(perfs['valid'].s_auc)
-        test_curve_auc.append(perfs['test'].s_auc)
+#         test_curve_auc.append(perfs['test'].s_auc)
+        test_curve_auc.append(0.0)
        
 
     # if 'classification' in dataset.task_type:
@@ -265,12 +278,85 @@ def run_exp_flat(queue, used_dataset, gpu_num, tp, exp_dir, partition): #
     #     best_val_epoch = np.argmin(np.array(valid_curve))
     #     best_train = min(train_curve)
     
-    for m, m_name in models:
-        torch.save(m.state_dict(), os.path.join(exp_dir, 'modelstates', f'{m_name}_statedict.pt'))
+#     for m, m_name in models:
+#         torch.save(m.state_dict(), os.path.join(exp_dir, 'modelstates', f'{m_name}_statedict.pt'))
 
-    print('Finished training!')
+    print('Finished training and validating!')
 #     print('Best validation score: {}'.format(train_curve_aupr[best_val_epoch]))
 #     print('Test score: {}'.format(test_curve_aupr[best_val_epoch]))
+
+    for dsettype in ["test"]:
+        
+        if(len(os.listdir(state_dict_dir)) > 0):  # load state dictionary of saved models
+            for m, m_name in models:
+                m.load_state_dict(torch.load(os.path.join(state_dict_dir, '{}.pkl'.format(m_name)), map_location=device_gpu))
+
+        
+        for m, m_name in models:
+            m.eval()
+
+        pred_class = []
+        ref_class = []
+        prob_scores = []
+
+#             fattn_w_scores_e_ids = []
+        l_ids = []
+
+        for i_batch, (batch_x, batch_y, batch_ids) in enumerate(tqdm(loaders[dsettype], desc="Iteration")):
+
+            batch_x = batch_x.to(device=device_gpu, dtype=fdtype)
+            batch_y = batch_y.to(device=device_gpu, dtype=fdtype)
+
+            batch_x_norm = expression_scaler.transform_ondevice(batch_x, device=device_gpu)
+            logsoftmax_scores = deepsynergy_model(batch_x_norm)
+
+
+            __, y_pred_clss = torch.max(logsoftmax_scores, -1)
+
+            y_pred_prob  = torch.exp(logsoftmax_scores.detach().cpu()).numpy()
+
+            pred_class.extend(y_pred_clss.view(-1).tolist())
+            ref_class.extend(batch_y.view(-1).tolist())
+            prob_scores.append(y_pred_prob)
+            l_ids.extend(batch_ids.view(-1).tolist())
+
+        prob_scores_arr = np.concatenate(prob_scores, axis=0)
+
+        dset_perf = perfmetric_report(pred_class, ref_class, prob_scores_arr[:,1], epoch,
+                                      outlog = os.path.join(exp_dir, dsettype + ".log"))
+
+        perfs[dsettype] = dset_perf
+
+        if (dsettype=="test"):
+
+            predictions_df = build_predictions_df(l_ids, ref_class, pred_class, prob_scores_arr)
+            predictions_df.to_csv(os.path.join(exp_dir, 'predictions', f'epoch_{epoch}_predictions_{dsettype}.csv'))
+            
+        print({'Test': perfs['test']})
+
+#         train_curve_aupr.append(perfs['train'].s_aupr)
+#         valid_curve_aupr.append(perfs['valid'].s_aupr)
+        test_curve_aupr.pop()
+        test_curve_aupr.append(perfs['test'].s_aupr)
+        
+#         train_curve_auc.append(perfs['train'].s_auc)
+#         valid_curve_auc.append(perfs['valid'].s_auc)
+        test_curve_auc.pop()
+        test_curve_auc.append(perfs['test'].s_auc)
+
+       
+
+    # if 'classification' in dataset.task_type:
+#     best_val_epoch = np.argmax(np.array(valid_curve_aupr))
+#     best_train = max(train_curve_aupr)
+    # else:
+    #     best_val_epoch = np.argmin(np.array(valid_curve))
+    #     best_train = min(train_curve)
+
+    print('Finished testing!')
+#     print('Best validation score: {}'.format(train_curve_aupr[best_val_epoch]))
+#     print('Test score: {}'.format(test_curve_aupr[best_val_epoch]))
+
 
     df_curves = pd.DataFrame(np.array([train_curve_aupr, valid_curve_aupr, test_curve_aupr,
                                        train_curve_auc, valid_curve_auc, test_curve_auc]).T)

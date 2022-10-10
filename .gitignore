@@ -13,3 +13,4 @@ data/preprocessing/drugcomb_*_*.csv
 *.pickle
 *.pkl
 *.pt
+.idea/**

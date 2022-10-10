@@ -2,7 +2,8 @@ data/processed/**
 data/drugcomb/**
 data/drugcombdb/**
 data/synergxdb/**
-data/az_chemicalx/**
+data/raw/**
+data/toy/**
 data/preprocessing/summary_v_1_5.csv
 data/preprocessing/Cell_line_RMA_proc_basalExp.txt
 data/preprocessing/gene_gex.tsv

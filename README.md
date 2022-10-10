@@ -4,6 +4,10 @@ This repository contains the code for the DDoS model implementation with PyTorch
 
 DDoS is a Graph Neural Network (GNN) based neural network model used for drug-drug-cell line synergy predictions.
 
+## Publication
+
+Schwarz, Kyriakos, et al. “DDoS: A Graph Neural Network based Drug Synergy Prediction Algorithm.” arXiv preprint arXiv:2210.00802 (2022), [https://arxiv.org/abs/2210.00802](https://arxiv.org/abs/2210.00802).
+
 ## Installation
 
 * `git clone` the repo and `cd` into it.

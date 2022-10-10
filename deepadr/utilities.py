@@ -8,6 +8,15 @@ from sklearn.metrics import classification_report, f1_score, roc_curve, precisio
                             recall_score, precision_score, roc_auc_score, auc, average_precision_score
 from matplotlib import pyplot as plt
 from os.path import dirname, abspath, isfile
+import itertools
+from .utilities import get_device, create_directory, ReaderWriter, perfmetric_report, plot_loss, add_weight_decay_except_attn
+from .model_attn_siamese import DeepAdr_SiameseTrf, DeepAdr_Transformer, FeatureEmbAttention
+from .dataset import construct_load_dataloaders
+from .losses import ContrastiveLoss, CosEmbLoss
+import torch
+from torch import nn
+import torch.multiprocessing as mp
+import datetime
 
 
 class ModelScore:
@@ -439,3 +448,51 @@ def add_weight_decay_except_attn(model_lst, l2_reg):
             else: 
                 decay.append(param)
     return [{'params': no_decay, 'weight_decay': 0.}, {'params': decay, 'weight_decay': l2_reg}]
+
+def dump_dict_content(dsettype_content_map, dsettypes, desc, wrk_dir):
+    for dsettype in dsettypes:
+        path = os.path.join(wrk_dir, '{}_{}.pkl'.format(desc, dsettype))
+        ReaderWriter.dump_data(dsettype_content_map[dsettype], path)
+        
+def get_random_fold(num_folds, random_seed=42):
+    np.random.seed(random_seed)
+    fold_num = np.random.randint(num_folds)
+    return fold_num
+
+def build_predictions_df(ids, true_class, pred_class, prob_scores):
+
+    prob_scores_dict = {}
+    for i in range (prob_scores.shape[-1]):
+        prob_scores_dict[f'prob_score_class{i}'] = prob_scores[:, i]
+
+    df_dict = {
+        'id': ids,
+        'true_class': true_class,
+        'pred_class': pred_class
+    }
+    df_dict.update(prob_scores_dict)
+    predictions_df = pd.DataFrame(df_dict)
+    predictions_df.set_index('id', inplace=True)
+    return predictions_df
+
+def compute_numtrials(prob_interval_truemax, prob_estim):
+    """ computes number of trials needed for random hyperparameter search
+        see `algorithms for hyperparameter optimization paper
+        <https://papers.nips.cc/paper/4443-algorithms-for-hyper-parameter-optimization.pdf>`__
+        Args:
+            prob_interval_truemax: float, probability interval of the true optimal hyperparam,
+                i.e. within 5% expressed as .05
+            prob_estim: float, probability/confidence level, i.e. 95% expressed as .95
+    """
+    n = np.log(1-prob_estim)/np.log(1-prob_interval_truemax)
+    return(int(np.ceil(n))+1)
+
+def get_saved_config(config_dir):
+    options = ReaderWriter.read_data(os.path.join(config_dir, 'exp_options.pkl'))
+    mconfig = ReaderWriter.read_data(os.path.join(config_dir, 'mconfig.pkl'))
+    return mconfig, options
+
+
+def get_index_argmax(score_matrix, target_indx):
+    argmax_indx = np.argmax(score_matrix, axis=0)[target_indx]
+    return argmax_indx

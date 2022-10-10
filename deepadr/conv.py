@@ -51,7 +51,6 @@ class GCNConvWEdge(MessagePassing):
 
         row, col = edge_index
 
-        #edge_weight = torch.ones((edge_index.size(1), ), device=edge_index.device)
         deg = degree(row, x.size(0), dtype = x.dtype) + 1
         deg_inv_sqrt = deg.pow(-0.5)
         deg_inv_sqrt[deg_inv_sqrt == float('inf')] = 0

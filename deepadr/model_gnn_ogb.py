@@ -73,20 +73,15 @@ class GNN(torch.nn.Module):
         else:
             h_node = self.gnn_node(x, edge_index, None)
             
-#         print("h_node_1 shape:", h_node[1].shape)
 
         if self.JK == "multilayer":
             h_graphs = [self.pool(h, batch) for h in h_node]
-#             print("h_graph_1 shape:", h_graphs[1].shape)
             
             h_graph_cat = torch.cat(h_graphs, dim=1)
-#             print("h_graph_cat shape:", h_graph_cat.shape)
             
             h_graph_t = h_graph_cat.reshape(h_graph_cat.shape[0], len(h_graphs), h_graph_cat.shape[1] // len(h_graphs))
-#             print("h_graph_t shape:", h_graph_t.shape)
             
             h_graph, layer_weights = self.layer_pooling(h_graph_t)
-#             print("h_graph shape:", h_graph.shape)
 
         else:
             h_graph = self.pool(h_node, batch)
@@ -111,8 +106,6 @@ class DeepAdr_SiameseTrf(nn.Module):
         
         self.do_softmax = do_softmax
         self.num_classes = num_classes
-#         self.exp3 = expression_dim // 3
-#         self.H1 = 64
         
         if dist == 'euclidean':
             self.dist = nn.PairwiseDistance(p=2, keepdim=True)
@@ -127,7 +120,6 @@ class DeepAdr_SiameseTrf(nn.Module):
         self.Wy = nn.Linear(2*input_dim+1, num_classes)
         
         self.Wy_ze = nn.Linear(2*input_dim+1+expression_dim, input_dim)
-#         self.Wy2 = nn.Linear(expression_dim, self.exp3)
         self.Wy3 = nn.Linear(input_dim, num_classes)
         
         self.drop = nn.Dropout(drop)
@@ -154,12 +146,9 @@ class DeepAdr_SiameseTrf(nn.Module):
         dist = self.alpha * (1-dist) + (1-self.alpha) * dist
         
         if (Z_e is not None):
-#             print("shapes:", Z_a.shape, Z_b.shape, Z_e.shape) 
             out = torch.cat([Z_a, Z_b, dist, Z_e], axis=-1)
             y = self.Wy_ze(out)
             y = self.drop(y)
-#             y = self.Wy2(y)
-#             y = self.drop(y)
             y = self.Wy3(y)
         else:
             out = torch.cat([Z_a, Z_b, dist], axis=-1)
@@ -177,11 +166,6 @@ class DeepAdr_SiameseTrf(nn.Module):
 class DeepSynergy(nn.Module):
     def __init__(self, D_in=2636, H1=8192, H2=4096, D_out=2, drop=0.5):
         super(DeepSynergy, self).__init__()
-        
-#         self.kernel = (3,1)
-#         self.conv1 = nn.Conv2d(1, 32, self.kernel)
-#         D_in = D_in // self.kernel[0] -(self.kernel[0]%2)
-#         print("D_in", D_in)
 
         # an affine operation: y = Wx + b
         self.fc1 = nn.Linear(D_in, H1) # Fully Connected
@@ -195,16 +179,6 @@ class DeepSynergy(nn.Module):
         print(self.drop, self.drop_in)
 
     def forward(self, x):
-        
-#         print("x.shape:", x.shape)
-#         x = x.unsqueeze(1).unsqueeze(-1)
-#         x = F.max_pool2d(F.relu(self.conv1(x)), self.kernel)
-#         print("x.shape:", x.shape)
-#         x, _ = torch.max(x, 1)
-#         print("x.shape:", x.shape)
-#         x = torch.flatten(x, 1)
-#         print("x.shape:", x.shape)
-
 
         x = F.relu(self.fc1(x))
         x = self.drop_in(x)
@@ -222,11 +196,6 @@ class DeepSynergy(nn.Module):
 class ExpressionNN(nn.Module):
     def __init__(self, D_in=926, H1=8192, H2=4096, D_out=2, drop=0.5):
         super(ExpressionNN, self).__init__()
-        
-#         self.kernel = (3,1)
-#         self.conv1 = nn.Conv2d(1, 32, self.kernel)
-#         D_in = D_in // self.kernel[0] -(self.kernel[0]%2)
-#         print("D_in", D_in)
 
         # an affine operation: y = Wx + b
         self.fc1 = nn.Linear(D_in, H1) # Fully Connected
@@ -241,22 +210,11 @@ class ExpressionNN(nn.Module):
 
     def forward(self, x):
         
-#         print("x.shape:", x.shape)
-#         x = x.unsqueeze(1).unsqueeze(-1)
-#         x = F.max_pool2d(F.relu(self.conv1(x)), self.kernel)
-#         print("x.shape:", x.shape)
-#         x, _ = torch.max(x, 1)
-#         print("x.shape:", x.shape)
-#         x = torch.flatten(x, 1)
-#         print("x.shape:", x.shape)
-
-
         x = F.relu(self.fc1(x))
         x = self.drop_in(x)
         x = F.relu(self.fc2(x))
         x = self.drop(x)
         x = self.fc3(x)
-#         return x
         return self.log_softmax(x)
     
     def _init_weights(self):
@@ -264,6 +222,3 @@ class ExpressionNN(nn.Module):
             if(isinstance(m, nn.Linear)):
                 nn.init.xavier_normal_(m.weight.data)
                 m.bias.data.uniform_(-1,0)
-        
-# if __name__ == '__main__':
-#     GNN(num_tasks = 10)

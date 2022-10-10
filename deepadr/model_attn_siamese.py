@@ -34,9 +34,7 @@ class SH_SelfAttention(nn.Module):
         
         # reweighted value vectors
         z = torch.bmm(attn_w_normalized, X_v)
-        
-#         print("SH attn_w_normalized.shape:", attn_w_normalized.shape)
-        
+                
         return z, attn_w_normalized
     
 
@@ -133,14 +131,9 @@ class FeatureEmbAttention(nn.Module):
         queryv_scaled = self.queryv / (self.input_dim ** (1/4))
         # using  matmul to compute tensor vector multiplication
         
-#         print("X_scaled.shape:", X_scaled.shape)
-#         print("queryv_scaled.shape:", queryv_scaled.shape)
-        
         # (bsize, seqlen)
         attn_weights = X_scaled.matmul(queryv_scaled)
         
-#         print("attn_weights shape:", attn_weights.shape)
-
         # softmax
         attn_weights_norm = self.softmax(attn_weights)
 
@@ -175,28 +168,15 @@ class FeatureEmbDrugAttention(nn.Module):
         '''
 
         X_scaled = X / (self.input_dim ** (1/4))
-#         h_a_scaled = h_a / (self.input_dim ** (1/4))
-#         h_b_scaled = h_b / (self.input_dim ** (1/4))
         
         queryv_scaled = self.queryv / (self.input_dim ** (1/4))
         # using  matmul to compute tensor vector multiplication
         
-#         print("X_scaled.shape:", X_scaled.shape)
-#         print("queryv_scaled.shape:", queryv_scaled.shape)
-        
         # (bsize, seqlen)
         attn_weights = X_scaled.matmul(queryv_scaled)
-        
-#         print("attn_weights shape:", attn_weights.shape)
-#         print("attn_weights X-hab:", attn_weights[:20, 905:912])
-#         print("attn_weights h_ab:", attn_weights[:20, :-20])
-
-
 
         # softmax
         attn_weights_norm = self.softmax(attn_weights)[:, :self.X_dim]
-#         print("attn_weights X-norm:", attn_weights_norm[:20, 905:908])
-
 
         # reweighted value vectors (in this case reweighting the original input X)
         # unsqueeze attn_weights_norm to get (bsize, 1, num similarity type vectors)
@@ -230,42 +210,28 @@ class GeneEmbAttention(nn.Module):
         
         X = X.squeeze(1).unsqueeze(2)
 
-#         print("X shape:", X.shape)
-
         X_scaled = X / (self.input_dim ** (1/4))
         queryv_scaled = self.queryv / (self.input_dim ** (1/4))
         # using  matmul to compute tensor vector multiplication
         
-#         print("X_scaled.shape:", X_scaled.shape)
-#         print("queryv_scaled.shape:", queryv_scaled.shape)
-        
         # (bsize, seqlen)
-#         attn_weights = X_scaled.matmul(queryv_scaled).squeeze(1)
         attn_weights = X_scaled.mul(queryv_scaled).squeeze(1)
 
-#         print("attn_weights shape:", attn_weights.shape)
         
         # softmax
         attn_weights_norm = self.softmax(attn_weights)
-        
-#         print("attn_weights_norm shape:", attn_weights_norm.shape)
-
 
         # reweighted value vectors (in this case reweighting the original input X)
         # unsqueeze attn_weights_norm to get (bsize, 1, num similarity type vectors)
         # perform batch multiplication with X that has shape (bsize, num similarity type vectors, feat_dim)
         # result will be (bsize, 1, feat_dim)
         # squeeze the result to obtain (bsize, feat_dim)
-#         z = X.squeeze(1).mul(attn_weights_norm)
         z = X.squeeze(1).mul(attn_weights_norm)
         
-#         print("z shape:", z.shape)
-
         z_ret = z.squeeze(2)
         attn_ret = attn_weights_norm.squeeze(2)
         
         # returns (bsize, feat_dim), (bsize, num similarity type vectors)
-#         return z, attn_weights_norm
         return z_ret, attn_ret
 
 class GeneEmbProjAttention(nn.Module):
@@ -314,9 +280,6 @@ class GeneEmbProjAttention(nn.Module):
         
 
         z, fattn_w_norm = self.pooling(z)
-        
-#         print("z after attn shape:", z.shape)
-#         print("fattn_w_norm shape:", fattn_w_norm.shape)
         
         return z, fattn_w_norm
 
@@ -380,13 +343,9 @@ class DeepAdr_Transformer(nn.Module):
             z = self.GeneEmbed(X)
         else:
             z = X
-        
-#         print("z shape:", z.shape)
-        
+                
         z = self.trfunit_pipeline(z)
-        
-#         print("z after trf shape:", z.shape)
-        
+                
         # pool across similarity type vectors
         # Note: z.mean(dim=1) will change shape of z to become (batch, input_size)
         # we can keep dimension by running z.mean(dim=1, keepdim=True) to have (batch, 1, input_size)
@@ -399,9 +358,6 @@ class DeepAdr_Transformer(nn.Module):
         elif self.pooling_mode == 'mean':
             z = self.pooling(z, dim=1)
             fattn_w_norm = None
-        
-#         print("z after attn shape:", z.shape)
-#         print("fattn_w_norm shape:", fattn_w_norm.shape)
         
         return z, fattn_w_norm
 

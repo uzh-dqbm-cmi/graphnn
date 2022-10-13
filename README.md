@@ -11,6 +11,7 @@ Schwarz, Kyriakos, et al. “DDoS: A Graph Neural Network based Drug Synergy Pre
 ## Installation
 
 * `git clone` the repo and `cd` into it.
+* Optionally, create a python `virtualenv` and install inside the `pip` packages from the `requirements.txt` file. Note that `torch` and `CUDA` versions depend on the GPU/CUDA which you use locally. 
 
 ## Data Download
 

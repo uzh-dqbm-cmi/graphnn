@@ -6,9 +6,11 @@
 import torch
 from torch import nn
 from torch_geometric.nn import MessagePassing
+from torch_geometric.nn.conv import *
 from torch_geometric.nn import global_add_pool, global_mean_pool, global_max_pool, GlobalAttention, Set2Set
 import torch.nn.functional as F
 from torch_geometric.nn.inits import uniform
+
 
 from .conv import GNN_node, GNN_node_Virtualnode
 from .dataset import create_setvector_features
@@ -88,6 +90,45 @@ class GNN(torch.nn.Module):
 
 #         return self.graph_pred_linear(h_graph)
         return h_graph
+
+class GATNet(torch.nn.Module):
+
+    def __init__(self, num_features_xd=9, n_output=2, output_dim=128, dropout=0.2, heads=10, file=None):
+        super(GATNet, self).__init__()
+
+
+        # graph drug layers
+        self.drug1_gcn1 = GATConv(num_features_xd, output_dim, heads=10, dropout=dropout)
+        self.drug1_gcn2 = GATConv(output_dim * 10, output_dim, dropout=dropout)
+        self.drug1_fc_g1 = nn.Linear(output_dim, output_dim)
+        
+        
+        # activation and regularization
+        self.relu = nn.ReLU()
+        self.dropout = nn.Dropout(dropout)
+        self.output_dim = output_dim
+
+
+    def forward(self, x, edge_index, edge_attr, batch):
+
+        print("sizes, dtypes:")
+        print(x.size(), x.dtype, edge_index.size(), edge_index.dtype)
+        
+        x1, arr = self.drug1_gcn1(x, edge_index)
+        x1 = F.elu(x1)
+        x1 = F.dropout(x1, p=0.2)
+
+        x1, arr = self.drug1_gcn2(x1, edge_index)
+        x1 = F.elu(x1)
+        x1 = F.dropout(x1, p=0.2)
+
+        x1 = global_max_pool(x1, batch)         # global max pooling
+
+
+        x1 = self.drug1_fc_g1(x1)
+        x1 = self.relu(x1)
+
+        return x1
 
 def _init_model_params(named_parameters):
     for p_name, p in named_parameters:
@@ -203,7 +244,7 @@ class ExpressionNN(nn.Module):
         self.fc3 = nn.Linear(H2, D_out)
         self.drop_in = nn.Dropout(0.2)
         self.drop = nn.Dropout(drop)
-        self.log_softmax = nn.LogSoftmax(dim=-1)
+#         self.log_softmax = nn.LogSoftmax(dim=-1)
         self._init_weights()
         
         print(self.drop, self.drop_in)
@@ -215,7 +256,43 @@ class ExpressionNN(nn.Module):
         x = F.relu(self.fc2(x))
         x = self.drop(x)
         x = self.fc3(x)
-        return self.log_softmax(x)
+#         return self.log_softmax(x)
+        return x
+    
+    def _init_weights(self):
+        for m in self.modules():
+            if(isinstance(m, nn.Linear)):
+                nn.init.xavier_normal_(m.weight.data)
+                m.bias.data.uniform_(-1,0)
+                
+                
+class DeepDDS_MLP(nn.Module):
+    def __init__(self, D_in=(4*128), H1=2048, H2=512, H3=128, D_out=2, drop=0.2):
+        super(DeepDDS_MLP, self).__init__()
+
+        # an affine operation: y = Wx + b
+        self.fc1 = nn.Linear(D_in, H1) # Fully Connected
+        self.fc2 = nn.Linear(H1, H2)
+        self.fc3 = nn.Linear(H2, H3)
+        self.out = nn.Linear(H3, D_out)
+#         self.drop_in = nn.Dropout(0.2)
+        self.drop = nn.Dropout(drop)
+#         self.log_softmax = nn.LogSoftmax(dim=-1)
+        self._init_weights()
+        
+#         print(self.drop, self.drop_in)
+
+    def forward(self, x):
+        
+        x = F.relu(self.fc1(x))
+        x = self.drop(x)
+        x = F.relu(self.fc2(x))
+        x = self.drop(x)
+        x = F.relu(self.fc3(x))
+        x = self.drop(x)
+        x = self.out(x)
+#         return self.log_softmax(x)
+        return x
     
     def _init_weights(self):
         for m in self.modules():

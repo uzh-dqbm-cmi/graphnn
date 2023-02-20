@@ -16,7 +16,7 @@ import deepadr
 from deepadr.dataset import *
 from deepadr.utilities import *
 from deepadr.chemfeatures import *
-from deepadr.model_gnn_ogb import GNN, DeepAdr_SiameseTrf, ExpressionNN, DeepSynergy
+from deepadr.model_gnn_ogb import GNN, GATNet, DeepAdr_SiameseTrf, ExpressionNN, DeepSynergy, DeepDDS_MLP
 from deepadr.model_attn_siamese import GeneEmbAttention, GeneEmbProjAttention
 from ogb.graphproppred import Evaluator
 
@@ -57,17 +57,13 @@ def build_predictions_df(ids, true_class, pred_class, prob_scores):
     predictions_df.set_index('id', inplace=True)
     return predictions_df
 
-def run_test(queue, used_dataset, gpu_num, tp, exp_dir, partition):
-    print("gpu_num", gpu_num)
 
-def run_exp(queue, used_dataset, gpu_num, tp, exp_dir, partition): #
+def run_exp_deepdds(queue, used_dataset, gpu_num, tp, exp_dir, partition): #
     
     num_classes = 2
     
     targetdata_dir_raw = os.path.abspath(exp_dir + "/../../raw")
     targetdata_dir_processed = os.path.abspath(exp_dir + "/../../processed")
-    
-    state_dict_dir = os.path.join(exp_dir, 'modelstates')
     
     device_gpu = get_device(True, index=gpu_num)
     print("gpu:", device_gpu)
@@ -90,32 +86,40 @@ def run_exp(queue, used_dataset, gpu_num, tp, exp_dir, partition): #
     
     loaders = {"train": train_loader, "valid": valid_loader, "test": test_loader}
 
-    gnn_model = GNN(gnn_type = tp["gnn_type"], 
-                num_layer = tp["num_layer"], 
-                emb_dim = tp["emb_dim"], 
-                drop_ratio = 0.5, 
-                JK = "multilayer", #last
-                graph_pooling = tp["graph_pooling"],
-                virtual_node = False,
-                with_edge_attr=False).to(device=device_gpu, dtype=fdtype)
+#     gnn_model = GNN(gnn_type = tp["gnn_type"], 
+# #                 num_tasks = dataset.num_classes, 
+#                 num_layer = tp["num_layer"], 
+#                 emb_dim = tp["emb_dim"], 
+#                 drop_ratio = 0.5, 
+#                 JK = "last",
+#                 graph_pooling = tp["graph_pooling"],
+#                 virtual_node = False,
+#                 with_edge_attr=False).to(device=device_gpu, dtype=fdtype)
 
 
-    expression_model = DeepSynergy(D_in=(2*tp["emb_dim"])+tp["expression_input_size"],
-                                   H1=tp['exp_H1'], H2=tp['exp_H2'], drop=tp['p_dropout']).to(device=device_gpu, dtype=fdtype)
+    gnn_model = GATNet(num_features_xd=9,
+                       n_output=2,
+                       output_dim=tp["emb_dim"],
+                       dropout=tp['p_dropout'],
+                       heads=tp["num_attn_heads"]).to(device=device_gpu, dtype=fdtype)
 
-    gene_attn_model = GeneEmbAttention(input_dim=tp["expression_input_size"]).to(device=device_gpu, dtype=fdtype)
 
-    models_param = list(gnn_model.parameters()) + list(expression_model.parameters()) + list(gene_attn_model.parameters())
+    expression_model = ExpressionNN(D_in=tp["expression_input_size"],
+                                   H1=tp['exp_H1'], H2=tp['exp_H2'], D_out=(2*tp["emb_dim"]), drop=tp['p_dropout']).to(device=device_gpu, dtype=fdtype)
+    
+    classification_model = DeepDDS_MLP(D_in=(4*tp["emb_dim"]),
+                                   H1=tp['exp_H1'], H2=tp['exp_H2'], H3=tp['emb_dim'], drop=tp['p_dropout']).to(device=device_gpu, dtype=fdtype)
+
+    models_param = list(gnn_model.parameters()) + list(expression_model.parameters())
 
 
     model_name = "ogb"
     models = [(gnn_model, f'{model_name}_GNN'),
               (expression_model, f'{model_name}_Expression'),
-
-              (gene_attn_model, f'{model_name}_GeneAttn'),
+              (classification_model, f'{model_name}_Classification')
              ]
-    
 
+#     y_weights = ReaderWriter.read_data(os.path.join(targetdata_dir_raw, 'y_weights.pkl'))
     y_weights = compute_class_weights(used_dataset.data.y[partition['train']])
     class_weights = torch.tensor(y_weights).type(fdtype).to(device_gpu)
 
@@ -133,8 +137,7 @@ def run_exp(queue, used_dataset, gpu_num, tp, exp_dir, partition): #
 
     loss_nlll = torch.nn.NLLLoss(weight=class_weights, reduction='mean')  # negative log likelihood loss
     loss_contrastive = ContrastiveLoss(0.5, reduction='mean')
-    
-    
+
     valid_curve_aupr = []
     test_curve_aupr = []
     train_curve_aupr = []
@@ -157,18 +160,18 @@ def run_exp(queue, used_dataset, gpu_num, tp, exp_dir, partition): #
         for i_batch, batch in enumerate(tqdm(train_loader, desc="Iteration")):
             batch = batch.to(device_gpu)
 
-            h_a = gnn_model(batch.x_a, batch.edge_index_a, batch.edge_attr_a, batch.x_a_batch)
-            h_b = gnn_model(batch.x_b, batch.edge_index_b, batch.edge_attr_b, batch.x_b_batch)
-                        
-            expression_norm = expression_scaler.transform_ondevice(batch.expression, device=device_gpu) 
-            h_e, _ = gene_attn_model(expression_norm.type(fdtype))
+            h_a = gnn_model(batch.x_a.type(fdtype), batch.edge_index_a, batch.edge_attr_a, batch.x_a_batch)
+            h_b = gnn_model(batch.x_b.type(fdtype), batch.edge_index_b, batch.edge_attr_b, batch.x_b_batch)
+            
+            expression_norm = expression_scaler.transform_ondevice(batch.expression, device=device_gpu)
+            
+            h_e = expression_model(expression_norm)
             
             triplet = torch.cat([h_a, h_b, h_e], axis=-1)
 
-            logsoftmax_scores = expression_model(triplet)
+            logsoftmax_scores = classification_model(triplet)
 
-            loss = loss_nlll(logsoftmax_scores, batch.y.type(torch.long))            
-
+            loss = loss_nlll(logsoftmax_scores, batch.y.type(torch.long))
             loss.backward()  # Derive gradients.
             optimizer.step()  # Update parameters based on gradients.
             cyc_scheduler.step() # after each batch step the scheduler
@@ -178,7 +181,7 @@ def run_exp(queue, used_dataset, gpu_num, tp, exp_dir, partition): #
 
         perfs = {}
 
-        for dsettype in ["train", "valid"]:
+        for dsettype in ["train", "test", "valid"]:
             for m, m_name in models:
                 m.eval()
 
@@ -189,20 +192,20 @@ def run_exp(queue, used_dataset, gpu_num, tp, exp_dir, partition): #
             l_ids = []
            
 
-
         #     for data in loader:  # Iterate in batches over the training/test dataset.
             for i_batch, batch in enumerate(tqdm(loaders[dsettype], desc="Iteration")):
                 batch = batch.to(device_gpu)
-                h_a = gnn_model(batch.x_a, batch.edge_index_a, batch.edge_attr_a, batch.x_a_batch)
-                h_b = gnn_model(batch.x_b, batch.edge_index_b, batch.edge_attr_b, batch.x_b_batch)
+                
+                h_a = gnn_model(batch.x_a.type(fdtype), batch.edge_index_a, batch.edge_attr_a, batch.x_a_batch)
+                h_b = gnn_model(batch.x_b.type(fdtype), batch.edge_index_b, batch.edge_attr_b, batch.x_b_batch)
 
-                expression_norm = expression_scaler.transform_ondevice(batch.expression, device=device_gpu) 
-                h_e, _ = gene_attn_model(expression_norm.type(fdtype))
+                expression_norm = expression_scaler.transform_ondevice(batch.expression, device=device_gpu)
 
+                h_e = expression_model(expression_norm)
 
                 triplet = torch.cat([h_a, h_b, h_e], axis=-1)
-                
-                logsoftmax_scores = expression_model(triplet)
+
+                logsoftmax_scores = classification_model(triplet)
 
 
                 __, y_pred_clss = torch.max(logsoftmax_scores, -1)
@@ -221,94 +224,30 @@ def run_exp(queue, used_dataset, gpu_num, tp, exp_dir, partition): #
             
             perfs[dsettype] = dset_perf
             
-            if (dsettype=="valid"):
+            if (dsettype=="test"):
                 
-                fscore = F_score(perfs['valid'].s_aupr, perfs['valid'].s_auc)
+                fscore = F_score(perfs['test'].s_aupr, perfs['test'].s_auc)
                 if (fscore > best_fscore):
                     best_fscore = fscore
                     best_epoch = epoch
-                    
-                    for m, m_name in models:
-                        torch.save(m.state_dict(), os.path.join(state_dict_dir, '{}.pkl'.format(m_name)))
+                
+                predictions_df = build_predictions_df(l_ids, ref_class, pred_class, prob_scores_arr)
+                predictions_df.to_csv(os.path.join(exp_dir, 'predictions', f'epoch_{epoch}_predictions_{dsettype}.csv'))
 
-        print({'Train': perfs['train'], 'Validation': perfs['valid']})
+      
 
-        
+        print({'Train': perfs['train'], 'Validation': perfs['valid'], 'Test': perfs['test']})
+
         train_curve_aupr.append(perfs['train'].s_aupr)
         valid_curve_aupr.append(perfs['valid'].s_aupr)
-        test_curve_aupr.append(0.0)
-
+        test_curve_aupr.append(perfs['test'].s_aupr)
         
         train_curve_auc.append(perfs['train'].s_auc)
         valid_curve_auc.append(perfs['valid'].s_auc)
-        test_curve_auc.append(0.0)
-
-
-    print('Finished training and validating!')
-        
-        
-    for dsettype in ["test"]:
-        
-        if(len(os.listdir(state_dict_dir)) > 0):  # load state dictionary of saved models
-            for m, m_name in models:
-                m.load_state_dict(torch.load(os.path.join(state_dict_dir, '{}.pkl'.format(m_name)), map_location=device_gpu))
-
-        
-        for m, m_name in models:
-            m.eval()
-
-        pred_class = []
-        ref_class = []
-        prob_scores = []
-
-        l_ids = []
-
-
-    #     for data in loader:  # Iterate in batches over the training/test dataset.
-        for i_batch, batch in enumerate(tqdm(loaders[dsettype], desc="Iteration")):
-            batch = batch.to(device_gpu)
-            h_a = gnn_model(batch.x_a, batch.edge_index_a, batch.edge_attr_a, batch.x_a_batch)
-            h_b = gnn_model(batch.x_b, batch.edge_index_b, batch.edge_attr_b, batch.x_b_batch)
-
-            expression_norm = expression_scaler.transform_ondevice(batch.expression, device=device_gpu) 
-            h_e, _ = gene_attn_model(expression_norm.type(fdtype))
-
-
-            triplet = torch.cat([h_a, h_b, h_e], axis=-1)
-
-            logsoftmax_scores = expression_model(triplet)
-
-
-            __, y_pred_clss = torch.max(logsoftmax_scores, -1)
-
-            y_pred_prob  = torch.exp(logsoftmax_scores.detach().cpu()).numpy()
-
-            pred_class.extend(y_pred_clss.view(-1).tolist())
-            ref_class.extend(batch.y.view(-1).tolist())
-            prob_scores.append(y_pred_prob)
-            l_ids.extend(batch.id.view(-1).tolist())
-
-        prob_scores_arr = np.concatenate(prob_scores, axis=0)
-
-        dset_perf = perfmetric_report(pred_class, ref_class, prob_scores_arr[:,1], epoch,
-                                      outlog = os.path.join(exp_dir, dsettype + ".log"))
-
-        perfs[dsettype] = dset_perf
-
-        if (dsettype=="test"):
-
-            predictions_df = build_predictions_df(l_ids, ref_class, pred_class, prob_scores_arr)
-            predictions_df.to_csv(os.path.join(exp_dir, 'predictions', f'epoch_{epoch}_predictions_{dsettype}.csv'))
-            
-        print({'Test': perfs['test']})
-
-        test_curve_aupr.pop()
-        test_curve_aupr.append(perfs['test'].s_aupr)
-
-        test_curve_auc.pop()
         test_curve_auc.append(perfs['test'].s_auc)
+       
 
-    print('Finished testing!')
+    print('Finished training!')
 
     df_curves = pd.DataFrame(np.array([train_curve_aupr, valid_curve_aupr, test_curve_aupr,
                                        train_curve_auc, valid_curve_auc, test_curve_auc]).T)

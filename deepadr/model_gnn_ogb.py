@@ -110,15 +110,12 @@ class GATNet(torch.nn.Module):
 
 
     def forward(self, x, edge_index, edge_attr, batch):
-
-        print("sizes, dtypes:")
-        print(x.size(), x.dtype, edge_index.size(), edge_index.dtype)
         
-        x1, arr = self.drug1_gcn1(x, edge_index)
+        x1 = self.drug1_gcn1(x, edge_index)
         x1 = F.elu(x1)
         x1 = F.dropout(x1, p=0.2)
 
-        x1, arr = self.drug1_gcn2(x1, edge_index)
+        x1 = self.drug1_gcn2(x1, edge_index)
         x1 = F.elu(x1)
         x1 = F.dropout(x1, p=0.2)
 
@@ -277,7 +274,7 @@ class DeepDDS_MLP(nn.Module):
         self.out = nn.Linear(H3, D_out)
 #         self.drop_in = nn.Dropout(0.2)
         self.drop = nn.Dropout(drop)
-#         self.log_softmax = nn.LogSoftmax(dim=-1)
+        self.log_softmax = nn.LogSoftmax(dim=-1)
         self._init_weights()
         
 #         print(self.drop, self.drop_in)
@@ -291,7 +288,7 @@ class DeepDDS_MLP(nn.Module):
         x = F.relu(self.fc3(x))
         x = self.drop(x)
         x = self.out(x)
-#         return self.log_softmax(x)
+        return self.log_softmax(x)
         return x
     
     def _init_weights(self):

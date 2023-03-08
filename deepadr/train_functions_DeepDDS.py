@@ -110,7 +110,7 @@ def run_exp_deepdds(queue, used_dataset, gpu_num, tp, exp_dir, partition): #
     classification_model = DeepDDS_MLP(D_in=(4*tp["emb_dim"]),
                                    H1=tp['exp_H1'], H2=tp['exp_H2'], H3=tp['emb_dim'], drop=tp['p_dropout']).to(device=device_gpu, dtype=fdtype)
 
-    models_param = list(gnn_model.parameters()) + list(expression_model.parameters())
+    models_param = list(gnn_model.parameters()) + list(expression_model.parameters()) + list(classification_model.parameters())
 
 
     model_name = "ogb"
